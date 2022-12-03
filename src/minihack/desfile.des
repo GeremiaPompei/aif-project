@@ -1,15 +1,19 @@
-MAZE: "mylevel",' '
-GEOMETRY:center,center
-MAP
--------------
-|.....|.....|
-|.....|.....|
-|.....+.....|
-|.....|.....|
-|.....|.....|
--------------
-ENDMAP
-REGION:(0,0,12,6),lit,"ordinary"
-BRANCH:(1,1,6,6),(0,0,0,0)
-DOOR:locked,(6,3)
-STAIR:(8,3),down
+LEVEL: "mylevel"
+
+# visibility of all the map
+# FLAGS: premapped
+
+ROOM: "ordinary" , lit, random, random, random {
+    OBJECT:('(', "skeleton key"), random
+}
+ROOM: "ordinary" , lit, random, random, random {
+    OBJECT:('(', "skeleton key"), random
+}
+ROOM: "ordinary" , lit, random, random, random {
+    OBJECT:('(', "skeleton key"), random
+}
+ROOM: "ordinary" , lit, random, random, random {
+    STAIR: random, down
+}
+
+RANDOM_CORRIDORS
