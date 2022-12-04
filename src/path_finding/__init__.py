@@ -1,1 +1,1 @@
-__all__ = ['astar']
+__all__ = ['astar', 'graph_search']

@@ -1,7 +1,7 @@
 from typing import TypeVar, Callable
 
-NodeValue = TypeVar("NodeValue")
-EdgeValue = TypeVar("EdgeValue")
+NodeId = TypeVar("NodeId")
+EdgeWeight = TypeVar("EdgeWeight")
 Edge = TypeVar("Edge")
 Node = TypeVar("Node")
 
@@ -10,26 +10,54 @@ EOS = "EOS"
 
 class Edge:
 
-    def __init__(self, node: Node, value: EdgeValue = None):
-        self.value = value
-        self.node = node
+    def __init__(self, node_from: Node, node_to: Node, weight: EdgeWeight = None):
+        self.weight = weight
+        self.node_from = node_from
+        self.node_to = node_to
+
+    def __str__(self):
+        return f"MHEdge(weight: {self.weight}, node_from: {self.node_from}, node_to: {self.node_to})"
+
+    def __hash__(self) -> int:
+        return hash((self.node_from, self.node_to))
+
+    def __eq__(self, o: object) -> bool:
+        return self.__hash__() == o.__hash__()
 
 
 class Node:
 
-    def __init__(self, value: NodeValue):
-        self.value = value
-        self.edges: list[Edge] = []
+    def __init__(self, id_node: NodeId):
+        self.id_node = id_node
+        self.edges_from: list[Edge] = []
+        self.edges_to: list[Edge] = []
 
-    def add(self, neighbor: Node, edge_value: EdgeValue = None):
-        self.edges.append(Edge(neighbor, edge_value))
+    def add(self, node_to: Node, weight: EdgeWeight = None):
+        edge = Edge(self, node_to, weight)
+        self.edges_to.append(edge)
+        node_to.edges_from.append(edge)
 
-    def remove(self, neighbor: NodeValue):
-        self.edges = filter(lambda e: e.node != neighbor, self.edges)
+    def remove(self, edge: Edge):
+        new_edges = []
+        for e in self.edges_to:
+            if e != edge:
+                new_edges.append(e)
+            else:
+                e.node_from.remove_from()
+        self.edges_to = new_edges
+
+    def remove_from(self, edge: Edge):
+        new_edges = []
+        for e in self.edges_from:
+            if e != edge:
+                new_edges.append(e)
+            else:
+                e.node_to.remove_to()
+        self.edges_from = new_edges
 
     def dfs(self, stored: list[Node], callback: Callable):
-        for edge in self.edges:
-            node = edge.node
+        for edge in self.edges_to:
+            node = edge.node_to
             if node in stored:
                 continue
             else:
@@ -42,8 +70,8 @@ class Node:
                 return rc
 
     def bfs(self, stored: list[Node], callback: Callable):
-        for edge in self.edges:
-            node = edge.node
+        for edge in self.edges_to:
+            node = edge.node_to
             if node in stored:
                 continue
             else:
@@ -54,6 +82,15 @@ class Node:
             rn = node.bfs(stored, callback)
             if rn is not None and rn[-1] == EOS:
                 return rn
+
+    def __hash__(self) -> int:
+        return hash(self.id_node)
+
+    def __eq__(self, o: object) -> bool:
+        return self.__hash__() == o.__hash__()
+
+    def __str__(self):
+        return f"MHNode(coords: id_node: {self.id_node}, edges_to: {self.edges_to}, edges_from: {self.edges_from})"
 
 
 class Graph:
@@ -72,3 +109,6 @@ class Graph:
         res = self.root.bfs(stored, callback)
         if res is not None:
             return res[0]
+
+    def __str__(self):
+        return f"MHGraph(root: {self.root})"

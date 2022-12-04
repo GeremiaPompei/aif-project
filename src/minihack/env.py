@@ -6,16 +6,17 @@ from nle import nethack
 from functools import reduce
 import numpy as np
 
-from src.data_structure.graph import EOS
 from src.minihack.actions import ACTIONS
+from src.minihack.desfile import gen_desfile
 from src.minihack.mh_graph import MHGraph
 
 
 class Env:
-    def __init__(self, actions: list[nethack.Command] = ACTIONS, max_episode_steps: int = 1000):
+    def __init__(self, all_visible: bool = False, actions: list[nethack.Command] = ACTIONS,
+                 max_episode_steps: int = 1000):
         self.env = gym.make(
             "MiniHack-Navigation-Custom-v0",
-            des_file="src/minihack/desfile.des",
+            des_file=gen_desfile(all_visible),
             actions=actions,
             max_episode_steps=max_episode_steps,
         )
@@ -27,12 +28,15 @@ class Env:
 
         self.graph = MHGraph(self)
 
+    def refresh_graph(self):
+        self.graph = MHGraph(self)
+
     def find_all_chars_pos(self, chars: list[str] = ['@']):
         return reduce(lambda x, y: x + y, [np.argwhere(self.obs['chars'] == ord(char)).tolist() for char in chars])
 
     def find_first_char_pos(self, char: str = '@'):
         res = self.find_all_chars_pos([char])
-        return res if len(res) > 0 else None
+        return res[0] if len(res) > 0 else None
 
     def close_to(self, char_list1: str, char_list2: str):
         for char1 in char_list1:
