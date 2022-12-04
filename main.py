@@ -1,7 +1,7 @@
-from src.minihack.env_gen import gen_minihack_env
+from src.minihack.env import Env
+from src.path_finding.bfs import BFS
 
-env = gen_minihack_env()
+env = Env()
+algorithm = BFS(env)
 
-env.reset()  # each reset generates a new environment instance
-env.step(1)  # move agent '@' north
-env.render()
+algorithm.run()
