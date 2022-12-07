@@ -1,6 +1,8 @@
-import numpy as np
+from time import sleep
 
+from src.data_structure.graph import EOS
 from src.minihack.env import Env
+from src.minihack.mh_graph import MHNode
 
 
 class AStar:
@@ -8,43 +10,56 @@ class AStar:
     def __init__(self, env: Env):
         self.env = env
 
-    def run(self, times: int = 1):
+    def run(self, targets: list[str], times: int = 1, verbose: bool = True):
+        targets = [ord(trg) for trg in targets]
         for _ in range(times):
             self.env.reset()
-            while not self.env.done:
-                self.search()
-            self.env.render()
+            while self.end_match(targets):
+                self.env.reset()
+                self.env.refresh_graph()
+            curr = self.env.graph.root
+            visited_edges = []
 
+            while not self.env.done and not self.end_match(targets):
+                self.set_edges_weight(targets)
+                edges = [e for e in curr.edges_to if e.weight is not None and e not in visited_edges]
+                if len(edges) == 0:
+                    break
+                edges.sort(key=lambda e: e.weight)
+                edge = edges[0]
+                step = curr.action_move(edge)
+                if step is None:
+                    break
+                self.env.step(step)
+                visited_edges.append(edge)
+                self.env.refresh_graph()
+                curr = self.env.graph.root
 
+                if verbose:
+                    sleep(0.5)
+                    self.env.render()
 
-    def heuristic(self, a, b) -> float:
-        (x1, y1) = a
-        (x2, y2) = b
-        return abs(x1 - x2) + abs(y1 - y2)
+    def end_match(self, trgs: list[int]):
+        return not self.env.graph.bfs(lambda n: [True, EOS] if n.content in trgs else None)
 
+    def set_edges_weight(self, trgs: list[int]):
+        nodes = []
 
-    def search(self):
-        goal = self.env.find_first_char_pos('>')
-        frontier = []
-        start = self.env.find_first_char_pos('@')
-        frontier.put(start, 0)
-        came_from = {}
-        cost_so_far = np.array(self.env.shape)
-        came_from[start] = None
-        cost_so_far[start] = 0
+        def f(n: MHNode):
+            if n.content in trgs:
+                nodes.append(n)
 
-        while not frontier.empty():
-            current = self.env.find_first_char_pos('@')
-
-            if current == goal:
-                break
-
-            for next in self.graph["neighbors"](current):
-                new_cost = cost_so_far[current] + self.graph["neighbors"].cost(current, next)
-                if next not in cost_so_far or new_cost < cost_so_far[next]:
-                    cost_so_far[next] = new_cost
-                    priority = new_cost + self.heuristic(next, goal)
-                    frontier.put(next, priority)
-                    came_from[next] = current
-
-        return came_from, cost_so_far
+        self.env.graph.bfs(f)
+        old_nodes = nodes.copy()
+        new_nodes = []
+        weight = 0
+        while len(old_nodes) > 0:
+            for node in old_nodes:
+                for edge in node.edges_from:
+                    edge.weight = weight
+                    if edge.node_from not in nodes:
+                        nodes.append(edge.node_from)
+                        new_nodes.append(edge.node_from)
+            old_nodes = new_nodes
+            new_nodes = []
+            weight += 1

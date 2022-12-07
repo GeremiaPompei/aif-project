@@ -41,10 +41,10 @@ class MHNode(Node):
                f", edges_from: {len(self.edges_from)})"
 
 
-def is_valid_edge(n: Node, neighbor: Node, blacklist=["-", "|", "+"], obscurity_char=" "):
+def is_valid_edge(n: Node, neighbor: Node, blacklist=["-", "|", "+", " "], obscurity_char=" "):
     blacklist = [ord(v) for v in blacklist]
-    return n.content not in blacklist and neighbor.content not in blacklist and (
-            n.content != ord(obscurity_char) or neighbor.content != ord(obscurity_char))
+    return n.content not in blacklist and neighbor.content not in blacklist  # and (
+    # n.content != ord(obscurity_char) or neighbor.content != ord(obscurity_char))
 
 
 class MHGraph(Graph):
@@ -67,8 +67,8 @@ class MHGraph(Graph):
         for node in self.nodes:
             self.env.iter_neighbors(node.x, node.y, lambda v, pc, kc: create_edge(node, pc, kc))
 
-        root = list(filter(lambda v: v.content == ord(hero_char), self.nodes))[0]
-
+        hero_chars = list(filter(lambda v: v.content == ord(hero_char), self.nodes))
+        root = hero_chars[0] if len(hero_chars) > 0 else None
         super(MHGraph, self).__init__(root)
 
     def __str__(self):

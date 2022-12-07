@@ -14,6 +14,9 @@ ACTIONS = [
     nethack.Command.OPEN,
     nethack.Command.KICK,
     nethack.Command.SEARCH,
+    nethack.Command.APPLY,
+    nethack.MiscDirection.UP,
+    nethack.MiscDirection.DOWN,
 ]
 
 ACTIONS_DICT = {action: i for i, action in enumerate(ACTIONS)}
