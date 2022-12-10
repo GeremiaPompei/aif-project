@@ -5,12 +5,13 @@ from nle.nethack import CompassDirection as directions, CompassIntercardinalDire
 
 from src.data_structure.graph import Graph, Node, Edge
 from src.minihack.actions import ACTIONS_DICT
+from src.minihack.symbol import Symbols
 
 MHNode = TypeVar("MHNode")
 
 
 class MHNode(Node):
-    def __init__(self, id_node: tuple[int, int], content: int):
+    def __init__(self, id_node: tuple[int, int], content: tuple[int, int]):
         super(MHNode, self).__init__(id_node)
         self.x, self.y = id_node
         self.content = content
@@ -37,23 +38,19 @@ class MHNode(Node):
             return ACTIONS_DICT[inter_directions.SE]
 
     def __str__(self):
-        return f"MHNode(id_node: {self.id_node}, content: \"{chr(self.content)}\", edges_to: {len(self.edges_to)}" \
+        return f"MHNode(id_node: {self.id_node}, content: {self.content}, " \
+               f"edges_to: {len(self.edges_to)}" \
                f", edges_from: {len(self.edges_from)})"
 
 
-def is_valid_edge(n: Node, neighbor: Node, blacklist=["-", "|", "+", " "], obscurity_char=" "):
-    blacklist = [ord(v) for v in blacklist]
-    return n.content not in blacklist and neighbor.content not in blacklist  # and (
-    # n.content != ord(obscurity_char) or neighbor.content != ord(obscurity_char))
-
-
 class MHGraph(Graph):
-    def __init__(self, env, hero_char="@", valid_edge_func=is_valid_edge):
+    def __init__(self, env, valid_edge_func, hero_char=Symbols.HERO_CHAR, invalid_nodes=[]):
         self.env = env
         x_max, y_max = self.env.shape
 
         self.nodes: list[MHNode] = []
         self.env.iter(lambda c, coords: self.nodes.append(MHNode(coords, c)))
+        self.invalid_nodes = invalid_nodes
 
         def create_edge(n: MHNode, pc, kc):
             px, py = pc
@@ -61,14 +58,15 @@ class MHGraph(Graph):
             kx += px
             ky += py
             neighbor: MHNode = self.nodes[kx * y_max + ky]
-            if valid_edge_func(n, neighbor):
+            if valid_edge_func(n, neighbor) and n not in invalid_nodes and neighbor not in invalid_nodes:
                 n.add(neighbor)
 
         for node in self.nodes:
             self.env.iter_neighbors(node.x, node.y, lambda v, pc, kc: create_edge(node, pc, kc))
 
-        hero_chars = list(filter(lambda v: v.content == ord(hero_char), self.nodes))
-        root = hero_chars[0] if len(hero_chars) > 0 else None
+        hero_nodes = list(filter(lambda v: v.content.char == hero_char.char, self.nodes))
+        root = hero_nodes[0] if len(hero_nodes) > 0 else None
+
         super(MHGraph, self).__init__(root)
 
     def __str__(self):

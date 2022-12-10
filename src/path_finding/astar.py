@@ -1,55 +1,72 @@
 from time import sleep
+from typing import Callable
 
-from src.data_structure.graph import EOS
+from nle import nethack
+
+from src.data_structure.graph import EOS, Node, Edge
+from src.minihack.actions import ACTIONS_DICT
 from src.minihack.env import Env
-from src.minihack.mh_graph import MHNode
+from src.minihack.mh_graph import MHNode, MHGraph
+from src.minihack.symbol import Symbol, Symbols
 
 
 class AStar:
 
-    def __init__(self, env: Env):
+    def __init__(self, env: Env, valid_edge_func: Callable):
         self.env = env
+        self.valid_edge_func = valid_edge_func
+        self.graph = MHGraph(self.env, self.valid_edge_func)
 
-    def run(self, targets: list[str], times: int = 1, verbose: bool = True):
-        targets = [ord(trg) for trg in targets]
-        for _ in range(times):
-            self.env.reset()
-            while self.end_match(targets):
-                self.env.reset()
-                self.env.refresh_graph()
-            curr = self.env.graph.root
-            visited_edges = []
+    def refresh_graph(self, invalid_nodes=[]):
+        self.graph = MHGraph(self.env, self.valid_edge_func, invalid_nodes=invalid_nodes)
 
-            while not self.env.done and not self.end_match(targets):
-                self.set_edges_weight(targets)
-                edges = [e for e in curr.edges_to if e.weight is not None and e not in visited_edges]
-                if len(edges) == 0:
-                    break
-                edges.sort(key=lambda e: e.weight)
-                edge = edges[0]
-                step = curr.action_move(edge)
-                if step is None:
-                    break
-                self.env.step(step)
-                visited_edges.append(edge)
-                self.env.refresh_graph()
-                curr = self.env.graph.root
+    def find(self, targets, already_visited_pos: list[Node] = [], visited_edges: dict[Edge, int] = {}, invalid_nodes: list[Node] = [], verbose: bool = True):
+        curr = self.graph.root
+        previous_pos = (curr.x, curr.y)
+        while not self.end_match(targets):
+            self.set_edges_weight(targets)
+            edges = [e for e in curr.edges_to if e.weight is not None]
+            if len(edges) == 0:
+                break
+            for edge in edges:
+                if edge in visited_edges:
+                    edge.weight += visited_edges[edge]
+            edges.sort(key=lambda e: e.weight)
+            edge = edges[0]
+            step = curr.action_move(edge)
+            if step is None:
+                break
+            if edge.node_to.content in Symbols.DOOR_CLOSE_CHARS:
+                self.env.step(ACTIONS_DICT[nethack.Command.APPLY])
+            self.env.step(step)
+            already_visited_pos.append((curr.x, curr.y))
+            inv_edge = Edge(edge.node_from, edge.node_to, edge.weight)
+            if inv_edge in visited_edges:
+                visited_edges[inv_edge] += 1
+            else:
+                visited_edges[inv_edge] = 1
+            self.refresh_graph(invalid_nodes=invalid_nodes)
+            if edge.node_to.content not in Symbols.DOOR_CLOSE_CHARS and previous_pos[0] == curr.x and \
+                    previous_pos[1] == curr.y and edge.node_to.content == Symbols.OBSCURE_CHAR:
+                invalid_nodes.append(edge.node_to)
+            previous_pos = (curr.x, curr.y)
+            curr = self.graph.root
 
-                if verbose:
-                    sleep(0.5)
-                    self.env.render()
+            if verbose:
+                sleep(0.5)
+                self.env.render()
 
-    def end_match(self, trgs: list[int]):
-        return not self.env.graph.bfs(lambda n: [True, EOS] if n.content in trgs else None)
+    def end_match(self, targets: list[Symbol]):
+        return not self.graph.bfs(lambda n: [True, EOS] if n.content in targets else None)
 
-    def set_edges_weight(self, trgs: list[int]):
+    def set_edges_weight(self, targets: list[int]):
         nodes = []
 
         def f(n: MHNode):
-            if n.content in trgs:
+            if n.content in targets:
                 nodes.append(n)
 
-        self.env.graph.bfs(f)
+        self.graph.bfs(f)
         old_nodes = nodes.copy()
         new_nodes = []
         weight = 0

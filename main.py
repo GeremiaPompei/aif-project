@@ -1,7 +1,7 @@
 from src.minihack.env import Env
-from src.path_finding.astar import AStar
+from src.path_finding.astar_planner import AStarPlanner
 
-env = Env(all_visible=True)
-algorithm = AStar(env)
+env = Env(all_visible=False)
+algorithm = AStarPlanner(env)
 
-algorithm.run(">")
+algorithm.run()
