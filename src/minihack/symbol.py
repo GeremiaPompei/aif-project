@@ -25,11 +25,11 @@ class Symbols:
     STAIR_UP_CHAR = Symbol('>', Colors.WHITE)
     STAIR_DOWN_UP = Symbol('<', Colors.WHITE)
     FLOOR_CHAR = Symbol('.', Colors.WHITE)
-    CORRIDOR_CHAR = Symbol('#', Colors.WHITE)
+    CORRIDOR_CHARS = [Symbol('#', Colors.WHITE), Symbol('`', Colors.WHITE)]
     OBSCURE_CHAR = Symbol(' ', Colors.BLACK)
 
-    TOTAL_SYMBOLS = WALL_CHARS + DOOR_OPEN_CHARS + DOOR_CLOSE_CHARS + \
-                    [FLOOR_CHAR, CORRIDOR_CHAR, HERO_CHAR, KEY_CHAR, STAIR_UP_CHAR, STAIR_DOWN_UP, OBSCURE_CHAR]
+    TOTAL_SYMBOLS = WALL_CHARS + DOOR_OPEN_CHARS + DOOR_CLOSE_CHARS + CORRIDOR_CHARS + \
+                    [FLOOR_CHAR, HERO_CHAR, KEY_CHAR, STAIR_UP_CHAR, STAIR_DOWN_UP, OBSCURE_CHAR]
 
     @staticmethod
     def get_symbol_from_env(env, symbol):

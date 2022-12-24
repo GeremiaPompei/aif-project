@@ -1,4 +1,3 @@
-from time import sleep
 from typing import Callable
 
 from nle import nethack
@@ -7,7 +6,7 @@ from src.data_structure.graph import EOS, Node, Edge
 from src.minihack.actions import ACTIONS_DICT
 from src.minihack.env import Env
 from src.minihack.mh_graph import MHNode, MHGraph
-from src.minihack.symbol import Symbol, Symbols
+from src.minihack.symbol import Symbols
 
 
 class AStar:
@@ -20,11 +19,11 @@ class AStar:
     def refresh_graph(self, invalid_nodes=[]):
         self.graph = MHGraph(self.env, self.valid_edge_func, invalid_nodes=invalid_nodes)
 
-    def find(self, targets, already_visited_pos: list[Node] = [], visited_edges: dict[Edge, int] = {}, invalid_nodes: list[Node] = [], verbose: bool = True):
+    def find(self, targets_pos, already_visited_pos: list[Node] = [], visited_edges: dict[Edge, int] = {}, invalid_nodes: list[Node] = [], verbose: bool = True):
         curr = self.graph.root
         previous_pos = (curr.x, curr.y)
-        while not self.end_match(targets):
-            self.set_edges_weight(targets)
+        while not self.end_match(targets_pos):
+            self.set_edges_weight(targets_pos)
             edges = [e for e in curr.edges_to if e.weight is not None]
             if len(edges) == 0:
                 break
@@ -53,17 +52,23 @@ class AStar:
             curr = self.graph.root
 
             if verbose:
-                sleep(0.5)
                 self.env.render()
+            break
 
-    def end_match(self, targets: list[Symbol]):
-        return not self.graph.bfs(lambda n: [True, EOS] if n.content in targets else None)
+    def end_match(self, targets_pos: list[tuple[int, int]]):
+        def func(n):
+            if (n.x, n.y) in targets_pos and n.content != Symbols.HERO_CHAR:
+                return [True, EOS]
+            else:
+                return None
 
-    def set_edges_weight(self, targets: list[int]):
+        return not self.graph.bfs(func)
+
+    def set_edges_weight(self, targets_pos: list[tuple[int, int]]):
         nodes = []
 
         def f(n: MHNode):
-            if n.content in targets:
+            if (n.x, n.y) in targets_pos:
                 nodes.append(n)
 
         self.graph.bfs(f)

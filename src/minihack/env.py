@@ -1,10 +1,9 @@
+from time import sleep
 from typing import Callable
 
 import gym
 import minihack
 from nle import nethack
-from functools import reduce
-import numpy as np
 
 from src.minihack.actions import ACTIONS
 from src.minihack.symbol import Symbol, Symbols
@@ -63,8 +62,9 @@ class Env:
         self.obs, self.reward, self.done, self.info = self.env.step(step)
         return self.obs, self.reward, self.done, self.info
 
-    def render(self):
+    def render(self, sleep_time = 0.5):
         self.env.render()
+        sleep(sleep_time)
 
     def __len__(self):
         return self.shape
