@@ -1,5 +1,5 @@
 cloudpickle==2.2.0
-gym==0.26.2
+gym==0.23.0
 gym-notices==0.0.8
 importlib-metadata==5.1.0
 minihack==0.1.3
