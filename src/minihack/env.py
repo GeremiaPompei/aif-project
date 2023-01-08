@@ -25,6 +25,7 @@ class Env:
         self.done = False
         self.info = None
         self.shape = nethack.OBSERVATION_DESC.get('chars')['shape']
+        self.over_hero_symbol = None
 
     def find_all_chars_pos(self, symbols: list[Symbol] = [Symbols.HERO_CHAR]):
         poss = []
@@ -62,7 +63,7 @@ class Env:
         self.obs, self.reward, self.done, self.info = self.env.step(step)
         return self.obs, self.reward, self.done, self.info
 
-    def render(self, sleep_time = 0.5):
+    def render(self, sleep_time: float = 0.5):
         self.env.render()
         sleep(sleep_time)
 
@@ -85,3 +86,18 @@ class Env:
                 pos = px + kx, py + ky
                 symbol = Symbol(self.obs["chars"][pos], self.obs["colors"][pos])
                 callback(symbol, (px, py), (kx, ky))
+
+    def get_neighbors(self, pos=None) -> list[Symbol]:
+        if pos is None:
+            x, y = self.find_first_char_pos(Symbols.HERO_CHAR)
+        else:
+            x, y = pos
+        neighbors = []
+        for kx in range(-1, 2, 1):
+            for ky in range(-1, 2, 1):
+                if kx != 0 and ky != 0:
+                    px = x + kx
+                    py = y + ky
+                    symbol = Symbol(self.obs["chars"][px, py], self.obs["colors"][px, py])
+                    neighbors.append(symbol)
+        return neighbors

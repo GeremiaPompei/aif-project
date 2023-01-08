@@ -26,14 +26,20 @@ class AStarPlanner:
     def get_target(self, already_visited_pos):
         targets_list = [Symbols.CORRIDOR_CHARS, [Symbols.STAIR_UP_CHAR], [Symbols.KEY_CHAR], Symbols.DOOR_OPEN_CHARS, Symbols.DOOR_CLOSE_CHARS,
                         [Symbols.OBSCURE_CHAR]]
+        walkable_symbols = Symbols.DOOR_CLOSE_CHARS + Symbols.WALKABLE_SYMBOLS
         for targets in targets_list:
             if targets[0] in Symbols.CORRIDOR_CHARS:
-                # TODO if we are in corridor and e neighbor is not corridor, walkable and not already visited this is
-                #  the target
                 corridor_not_visited = [pos for pos in self.env.find_all_chars_pos(Symbols.CORRIDOR_CHARS) if
                                         pos not in already_visited_pos]
                 if len(corridor_not_visited) == 0:
-                    continue
+                    if self.env.over_hero_symbol in Symbols.CORRIDOR_CHARS:
+                        neighbors = [n for n in self.env.get_neighbors() if n in walkable_symbols]
+                        if len(neighbors) > 0:
+                            return [neighbors[0]]
+                        else:
+                            continue
+                    else:
+                        continue
                 else:
                     return corridor_not_visited
             else:

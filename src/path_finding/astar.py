@@ -37,6 +37,7 @@ class AStar:
                 break
             if edge.node_to.content in Symbols.DOOR_CLOSE_CHARS:
                 self.env.step(ACTIONS_DICT[nethack.Command.APPLY])
+            self.env.over_hero_symbol = edge.node_to.content
             self.env.step(step)
             already_visited_pos.append((curr.x, curr.y))
             inv_edge = Edge(edge.node_from, edge.node_to, edge.weight)
