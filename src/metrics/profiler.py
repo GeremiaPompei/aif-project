@@ -4,6 +4,18 @@ import time
 from memory_profiler import profile
 from src.minihack.env import Env
 
+import logging as lg
+import sys
+
+root = lg.getLogger()
+root.setLevel(lg.INFO)
+
+handler = lg.StreamHandler(sys.stdout)
+handler.setLevel(lg.DEBUG)
+formatter = lg.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+root.addHandler(handler)
+
 
 def memory_measure(callable: tp.Callable):
     @profile
@@ -39,7 +51,9 @@ class AlgorithmProfiler:
         return env
 
     def profile(self):
-        for _ in range(self._n):
+        for i in range(self._n):
+            lg.info(f"Round {i + 1}/{self._n}")
+
             env = self._generate_env()
             algorithm = self._algo(env, self)
             # profile memory
@@ -48,10 +62,30 @@ class AlgorithmProfiler:
             start = time.time()
 
             # run algorithm
-            algorithm.run()
+            win, total_steps, steps_first_key, steps_first_door, steps_first_corridor = algorithm.run(verbose=False)
 
             end = time.time()
             self._execution_time += end - start
+
+            lg.info("Win" if win else "Lost")
+            if win:
+                self._total_wins += 1
+
+            lg.info(f"Total steps: {total_steps}")
+            self._total_steps += total_steps
+
+            if steps_first_key is not None:
+                lg.info(f"Steps first key: {steps_first_key}")
+                self._steps_first_key += steps_first_key
+
+            if steps_first_door is not None:
+                lg.info(f"Steps first door: {steps_first_door}")
+                self._steps_first_door += steps_first_door
+
+            if steps_first_corridor is not None:
+                lg.info(f"Steps first corridor: {steps_first_corridor}")
+                self._steps_first_corridor += steps_first_corridor
+
 
     def compute_metrics(self) -> tp.Dict[str, float]:
         total_steps = float(self._total_steps / self._n)
@@ -65,7 +99,7 @@ class AlgorithmProfiler:
             "steps_first_door": steps_first_door,
             "steps_first_key": steps_first_key,
             "steps_first_corridor": steps_first_corridor,
-            "total_run": self.n,
+            "total_run": self._n,
             "total_wins": self._total_wins,
             "total_lost": total_lost
 

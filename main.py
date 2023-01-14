@@ -7,3 +7,6 @@ profiler = AlgorithmProfiler(
 )
 
 profiler.profile()
+metrics = profiler.compute_metrics()
+
+print(metrics)
