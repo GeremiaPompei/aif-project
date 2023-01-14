@@ -1,4 +1,7 @@
+from typing import Callable
+
 from src.data_structure.graph import Node
+from src.domain.algorithm_runner import AlgorithmRunner
 from src.minihack.env import Env
 from src.minihack.symbol import Symbols
 from src.path_finding.astar import AStar
@@ -17,18 +20,26 @@ def is_valid_edge(node_from: Node, node_to: Node, blacklist=Symbols.WALL_CHARS,
     )
 
 
-class AStarPlanner:
+class AStarRunner(AlgorithmRunner):
 
-    def __init__(self, env: Env, profiler):
-        self.env = env
-        self.algorithm = AStar(env, is_valid_edge)
-        self.profiler = profiler
+    def __init__(self, heuristic: Callable = None, env: Env = None, profiler = None):
         self.targets_list = [[Symbols.STAIR_UP_CHAR], [Symbols.KEY_CHAR],
                              Symbols.DOOR_OPEN_CHARS, Symbols.CORRIDOR_CHARS,
                              Symbols.DOOR_CLOSE_CHARS, [Symbols.OBSCURE_CHAR]]
         self.walkable_symbols = Symbols.DOOR_CLOSE_CHARS + Symbols.WALKABLE_SYMBOLS
+        self.env = None
+        self.algorithm = None
+        self.profiler = None
+        if env is not None:
+            self.init_env(env, profiler)
+        self.heuristic = heuristic
 
-    def get_target(self, already_visited_pos):
+    def init_env(self, env: Env, profiler):
+        self.env = env
+        self.algorithm = AStar(env, is_valid_edge, self.heuristic)
+        self.profiler = profiler
+
+    def _get_target(self, already_visited_pos):
         for targets in self.targets_list:
             if not self.algorithm.reachable(targets):
                 continue
@@ -45,7 +56,7 @@ class AStarPlanner:
                     return poss
         return None
 
-    def run(self, verbose: bool = True):
+    def run(self, verbose: bool = True) -> tuple[bool, int, float, float, float]:
         self.env.reset()
         self.algorithm.refresh_graph()
         already_visited_pos, visited_edges, invalid_nodes = {}, {}, []
@@ -53,7 +64,10 @@ class AStarPlanner:
             self.env.render()
         total_steps, steps_first_key, steps_first_door, steps_first_corridor = 0, None, None, None
         while not self.env.done:
-            self.algorithm.find(self.get_target(set(already_visited_pos.keys())),
+            targets_pos = self._get_target(set(already_visited_pos.keys()))
+            if len(targets_pos) == 0:
+                break
+            self.algorithm.find(targets_pos,
                                 already_visited_pos=already_visited_pos, visited_edges=visited_edges,
                                 invalid_nodes=invalid_nodes, verbose=verbose)
             total_steps += 1

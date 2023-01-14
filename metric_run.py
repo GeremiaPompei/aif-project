@@ -1,4 +1,4 @@
-from src.path_finding.astar_planner import AStarPlanner
+from src.path_finding.astar_runner import AStarPlanner
 from src.metrics import AlgorithmProfiler
 
 profiler = AlgorithmProfiler(

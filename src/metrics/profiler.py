@@ -2,6 +2,8 @@ import typing as tp
 import time
 
 from memory_profiler import profile
+
+from src.domain.algorithm_runner import AlgorithmRunner
 from src.minihack.env import Env
 
 import logging as lg
@@ -25,10 +27,10 @@ def memory_measure(callable: tp.Callable):
 
 class AlgorithmProfiler:
 
-    def __init__(self, algorithm: tp.Callable, n: int = 0):
+    def __init__(self, algorithm: AlgorithmRunner, n: int = 0):
         """
         Initialize the profiler
-        :param algorithm: the algorithm to be called
+        :param algorithm (AlgorithmRunner): the algorithm to be called
         :param n: the number of environment to generate
         """
         self._total_steps = 0
@@ -55,17 +57,19 @@ class AlgorithmProfiler:
             lg.info(f"Round {i + 1}/{self._n}")
 
             env = self._generate_env()
-            algorithm = self._algo(env, self)
+            self._algo.init_env(env, self)
             # profile memory
 
             # collect time
             start = time.time()
 
             # run algorithm
-            win, total_steps, steps_first_key, steps_first_door, steps_first_corridor = algorithm.run(verbose=False)
+            win, total_steps, steps_first_key, steps_first_door, steps_first_corridor = self._algo.run(verbose=False)
 
             end = time.time()
-            self._execution_time += end - start
+            execution_time = end - start
+            lg.info(f"Execution time: {execution_time}")
+            self._execution_time += execution_time
 
             lg.info("Win" if win else "Lost")
             if win:
@@ -101,7 +105,7 @@ class AlgorithmProfiler:
             "steps_first_corridor": steps_first_corridor,
             "total_run": self._n,
             "total_wins": self._total_wins,
-            "total_lost": total_lost
-
+            "total_lost": total_lost,
+            "execution_time": self._execution_time,
         }
 
