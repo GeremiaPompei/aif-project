@@ -4,6 +4,8 @@ from src.path_finding.heuristics import Heuristics
 
 analyzer = Analyzer(
     algorithms=[
+        AStarRunner(),
+        AStarRunner(heuristic=Heuristics.manhattan),
         AStarRunner(heuristic=Heuristics.euclidean),
         AStarRunner(heuristic=Heuristics.walkable_steps_in_matrix),
     ],

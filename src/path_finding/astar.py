@@ -31,7 +31,9 @@ class AStar:
             if edge.node_to.id_node in already_visited_pos:
                 edge.node_to.weight += already_visited_pos[edge.node_to.id_node]
 
-        edges.sort(key=lambda e: e.weight + e.node_to.weight + self.heuristic(self.env, curr.id_node, targets_pos))
+        edges.sort(key=lambda e: e.weight + e.node_to.weight + (
+            self.heuristic(self.env, curr.id_node, targets_pos) if self.heuristic is not None else 0
+        ))
         edge = edges[0]
         step = curr.action_move(edge)
         if edge.node_to.content in Symbols.DOOR_CLOSE_CHARS:

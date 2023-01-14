@@ -81,4 +81,4 @@ class AStarRunner(AlgorithmRunner):
         return (self.env.over_hero_symbol == Symbols.STAIR_UP_CHAR), total_steps, steps_first_key, steps_first_door, steps_first_corridor
 
     def __str__(self):
-        return f"AStar({self.heuristic.__name__})"
+        return f"AStar({self.heuristic.__name__ if self.heuristic is not None else ''})"
