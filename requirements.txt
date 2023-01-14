@@ -1,11 +1,20 @@
+certifi==2022.12.7
+charset-normalizer==2.1.1
 cloudpickle==2.2.0
 gym==0.23.0
 gym-notices==0.0.8
+idna==3.4
 importlib-metadata==5.1.0
 memory-profiler==0.61.0
-minihack==0.1.3
+minihack @ git+https://github.com/GeremiaPompei/minihack@93b6ddb5f10ce0b8ed22715305ed771ce6fa91ff
 nle==0.9.0
 numpy==1.23.5
+Pillow==9.4.0
 psutil==5.9.4
 pybind11==2.10.1
+requests==2.28.1
+torch==1.13.1
+torchvision==0.14.1
+typing_extensions==4.4.0
+urllib3==1.26.13
 zipp==3.11.0
