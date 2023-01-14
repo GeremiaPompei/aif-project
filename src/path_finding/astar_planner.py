@@ -19,9 +19,10 @@ def is_valid_edge(node_from: Node, node_to: Node, blacklist=Symbols.WALL_CHARS,
 
 class AStarPlanner:
 
-    def __init__(self, env: Env):
+    def __init__(self, env: Env, profiler):
         self.env = env
         self.algorithm = AStar(env, is_valid_edge)
+        self.profiler = profiler
 
     def get_target(self, already_visited_pos):
         targets_list = [Symbols.CORRIDOR_CHARS, [Symbols.STAIR_UP_CHAR], [Symbols.KEY_CHAR], Symbols.DOOR_OPEN_CHARS, Symbols.DOOR_CLOSE_CHARS,
