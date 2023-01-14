@@ -1,7 +1,6 @@
 from typing import TypeVar, Callable
 
 NodeId = TypeVar("NodeId")
-EdgeWeight = TypeVar("EdgeWeight")
 Edge = TypeVar("Edge")
 Node = TypeVar("Node")
 
@@ -10,7 +9,7 @@ EOS = "EOS"
 
 class Edge:
 
-    def __init__(self, node_from: Node, node_to: Node, weight: EdgeWeight = None):
+    def __init__(self, node_from: Node, node_to: Node, weight: float = 0):
         self.weight = weight
         self.node_from = node_from
         self.node_to = node_to
@@ -27,12 +26,13 @@ class Edge:
 
 class Node:
 
-    def __init__(self, id_node: NodeId):
+    def __init__(self, id_node: NodeId, weight: float = 0):
         self.id_node = id_node
+        self.weight = weight
         self.edges_from: list[Edge] = []
         self.edges_to: list[Edge] = []
 
-    def add(self, node_to: Node, weight: EdgeWeight = None):
+    def add(self, node_to: Node, weight: float = 0):
         edge = Edge(self, node_to, weight)
         self.edges_to.append(edge)
         node_to.edges_from.append(edge)

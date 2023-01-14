@@ -30,7 +30,7 @@ class AStar:
             for edge in edges:
                 if edge in visited_edges:
                     edge.weight += visited_edges[edge]
-            edges.sort(key=lambda e: e.weight)
+            edges.sort(key=lambda e: e.weight + e.node_to.weight)
             edge = edges[0]
             step = curr.action_move(edge)
             if step is None:
@@ -73,6 +73,7 @@ class AStar:
                 nodes.append(n)
 
         self.graph.bfs(f)
+
         old_nodes = nodes.copy()
         new_nodes = []
         weight = 0
@@ -80,6 +81,7 @@ class AStar:
             for node in old_nodes:
                 for edge in node.edges_from:
                     edge.weight = weight
+                    edge.node_from.weight = node.weight + 1
                     if edge.node_from not in nodes:
                         nodes.append(edge.node_from)
                         new_nodes.append(edge.node_from)

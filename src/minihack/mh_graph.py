@@ -11,8 +11,8 @@ MHNode = TypeVar("MHNode")
 
 
 class MHNode(Node):
-    def __init__(self, id_node: tuple[int, int], content: tuple[int, int]):
-        super(MHNode, self).__init__(id_node)
+    def __init__(self, id_node: tuple[int, int], content: tuple[int, int], weight: float = 0):
+        super(MHNode, self).__init__(id_node, weight)
         self.x, self.y = id_node
         self.content = content
 
