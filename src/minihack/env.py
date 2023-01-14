@@ -1,3 +1,4 @@
+from copy import deepcopy
 from time import sleep
 from typing import Callable
 
@@ -14,6 +15,7 @@ class Env:
 
     def __init__(self, all_visible: bool = False, actions: list[nethack.Command] = ACTIONS,
                  max_episode_steps: int = 1000):
+        self.max_episode_steps = max_episode_steps
         self.env = gym.make(
             "MiniHack-Navigation-Custom-v0",
             des_file=gen_desfile(all_visible),

@@ -1,13 +1,16 @@
 from src.path_finding.astar_runner import AStarRunner
-from src.metrics import AlgorithmProfiler
+from src.metrics import Analyzer
 from src.path_finding.heuristics import Heuristics
 
-profiler = AlgorithmProfiler(
-    algorithm=AStarRunner(heuristic=Heuristics.walkable_steps_in_matrix),
-    n=10
+analyzer = Analyzer(
+    algorithms=[
+        AStarRunner(heuristic=Heuristics.euclidean),
+        AStarRunner(heuristic=Heuristics.walkable_steps_in_matrix),
+    ],
+    env_n=3,
+    max_episode_steps=2,
 )
 
-profiler.profile()
-metrics = profiler.compute_metrics()
+analyzer.analyze()
 
-print(metrics)
+print(analyzer.metrics)

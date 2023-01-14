@@ -2,11 +2,10 @@ from src.minihack.env import Env
 
 
 class AlgorithmRunner:
-    def init_env(self, env: Env, profiler) -> None:
+    def init_env(self, env: Env) -> None:
         """
         Environment initializer.
         :param env: Environment
-        :param profiler: Profiler
         :return: None
         """
         pass
