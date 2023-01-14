@@ -1,7 +1,16 @@
-from src.minihack.env import Env
-from src.path_finding.astar_planner import AStarPlanner
+from src.path_finding.astar_runner import AStarRunner
+from src.metrics import Analyzer
+from src.path_finding.heuristics import Heuristics
 
-env = Env(all_visible=False)
-algorithm = AStarPlanner(env)
+analyzer = Analyzer(
+    algorithms=[
+        AStarRunner(heuristic=Heuristics.euclidean),
+        AStarRunner(heuristic=Heuristics.walkable_steps_in_matrix),
+    ],
+    env_n=3,
+    max_episode_steps=2,
+)
 
-algorithm.run()
+analyzer.analyze()
+
+print(analyzer.metrics)
