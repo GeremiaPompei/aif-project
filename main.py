@@ -1,7 +1,9 @@
-from src.minihack.env import Env
 from src.path_finding.astar_planner import AStarPlanner
+from src.metrics import AlgorithmProfiler
 
-env = Env(all_visible=False)
-algorithm = AStarPlanner(env)
+profiler = AlgorithmProfiler(
+    algorithm=AStarPlanner,
+    n=10
+)
 
-algorithm.run()
+profiler.profile()

@@ -63,7 +63,7 @@ class Env:
         self.obs, self.reward, self.done, self.info = self.env.step(step)
         return self.obs, self.reward, self.done, self.info
 
-    def render(self, sleep_time: float = 0.5):
+    def render(self, sleep_time: float = 0.2):
         self.env.render()
         sleep(sleep_time)
 
@@ -87,7 +87,7 @@ class Env:
                 symbol = Symbol(self.obs["chars"][pos], self.obs["colors"][pos])
                 callback(symbol, (px, py), (kx, ky))
 
-    def get_neighbors(self, pos=None) -> list[Symbol]:
+    def get_neighbors(self, pos=None) -> list[tuple[Symbol, tuple[float, float]]]:
         if pos is None:
             x, y = self.find_first_char_pos(Symbols.HERO_CHAR)
         else:
@@ -99,5 +99,5 @@ class Env:
                     px = x + kx
                     py = y + ky
                     symbol = Symbol(self.obs["chars"][px, py], self.obs["colors"][px, py])
-                    neighbors.append(symbol)
+                    neighbors.append((symbol, (px, py)))
         return neighbors

@@ -6,7 +6,7 @@ from src.data_structure.graph import EOS, Node, Edge
 from src.minihack.actions import ACTIONS_DICT
 from src.minihack.env import Env
 from src.minihack.mh_graph import MHNode, MHGraph
-from src.minihack.symbol import Symbols
+from src.minihack.symbol import Symbols, Symbol
 
 
 class AStar:
@@ -23,13 +23,15 @@ class AStar:
         curr = self.graph.root
         previous_pos = (curr.x, curr.y)
         while not self.end_match(targets_pos):
-            self.set_edges_weight(targets_pos)
+            self.set_weights(targets_pos)
             edges = [e for e in curr.edges_to if e.weight is not None]
             if len(edges) == 0:
                 break
             for edge in edges:
                 if edge in visited_edges:
                     edge.weight += visited_edges[edge]
+                if edge.node_to.id_node in already_visited_pos:
+                    edge.node_to.weight += already_visited_pos[edge.node_to.id_node]
             edges.sort(key=lambda e: e.weight + e.node_to.weight)
             edge = edges[0]
             step = curr.action_move(edge)
@@ -39,7 +41,11 @@ class AStar:
                 self.env.step(ACTIONS_DICT[nethack.Command.APPLY])
             self.env.over_hero_symbol = edge.node_to.content
             self.env.step(step)
-            already_visited_pos.append((curr.x, curr.y))
+            pos = (curr.x, curr.y)
+            if pos in already_visited_pos:
+                already_visited_pos[pos] += 1
+            else:
+                already_visited_pos[pos] = 1
             inv_edge = Edge(edge.node_from, edge.node_to, edge.weight)
             if inv_edge in visited_edges:
                 visited_edges[inv_edge] += 1
@@ -56,16 +62,28 @@ class AStar:
                 self.env.render()
             break
 
-    def end_match(self, targets_pos: list[tuple[int, int]]):
+    def reachable(self, symbols: list[Symbol]):
         def func(n):
-            if (n.x, n.y) in targets_pos and n.content != Symbols.HERO_CHAR:
+            if n.content in symbols:
+                return [True, EOS]
+            else:
+                return None
+
+        return self.graph.bfs(func)
+
+    def end_match(self, targets_pos: list[tuple[int, int]]):
+        if targets_pos is None:
+            return True
+
+        def func(n):
+            if n.id_node in targets_pos and n.content != Symbols.HERO_CHAR:
                 return [True, EOS]
             else:
                 return None
 
         return not self.graph.bfs(func)
 
-    def set_edges_weight(self, targets_pos: list[tuple[int, int]]):
+    def set_weights(self, targets_pos: list[tuple[int, int]]):
         nodes = []
 
         def f(n: MHNode):
@@ -81,7 +99,7 @@ class AStar:
             for node in old_nodes:
                 for edge in node.edges_from:
                     edge.weight = weight
-                    edge.node_from.weight = node.weight + 1
+                    edge.node_from.weight = node.weight + 0.5
                     if edge.node_from not in nodes:
                         nodes.append(edge.node_from)
                         new_nodes.append(edge.node_from)
