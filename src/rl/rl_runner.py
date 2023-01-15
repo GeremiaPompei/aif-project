@@ -1,5 +1,6 @@
 import torch
 
+from src.domain import AlgorithmRunner
 from src.minihack.env import Env
 from src.rl.dqn import DQN
 from src.rl.replay_memory import ReplayMemory
@@ -10,34 +11,38 @@ GAMMA = 0.99
 TAU = 0.005
 
 
-class RLPlanner:
+class RLRunner(AlgorithmRunner):
     def __init__(self, env: Env):
+        self.env = None
+        if env is not None:
+            self.init_env(env)
+
+    def init_env(self, env: Env) -> None:
         self.env = env
 
-    def run(self, times: int = 1, verbose: bool = True):
-        for _ in range(times):
-            self.env.reset()
+    def run(self, verbose: bool = True) -> tuple[bool, float, float, float, float]:
+        self.env.reset()
+        if verbose:
+            self.env.render()
+        target_net = DQN()
+        policy_net = DQN()
+        reply_memory = ReplayMemory(100)
+        next_state = None
+        while not self.env.done:
+            state = self.env.obs["chars"]
+            action = policy_net.select_action(state)
+            self.env.step(action.item())
+            reply_memory.push(state=state, action=action, next_state=next_state, reward=self.env.reward)
+            next_state = state
+            self.optimize_model(reply_memory, policy_net, target_net)
+            target_net_state_dict = target_net.state_dict()
+            policy_net_state_dict = policy_net.state_dict()
+            for key in policy_net_state_dict:
+                target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
+            target_net.load_state_dict(target_net_state_dict)
+            self.env.step(1)
             if verbose:
                 self.env.render()
-            target_net = DQN()
-            policy_net = DQN()
-            reply_memory = ReplayMemory(100)
-            next_state = None
-            while not self.env.done:
-                state = self.env.obs["chars"]
-                action = policy_net.select_action(state)
-                self.env.step(action.item())
-                reply_memory.push(state=state, action=action, next_state=next_state, reward=self.env.reward)
-                next_state = state
-                self.optimize_model(reply_memory, policy_net, target_net)
-                target_net_state_dict = target_net.state_dict()
-                policy_net_state_dict = policy_net.state_dict()
-                for key in policy_net_state_dict:
-                    target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
-                target_net.load_state_dict(target_net_state_dict)
-                self.env.step(1)
-                if verbose:
-                    self.env.render()
 
     def optimize_model(self, reply_memory: ReplayMemory, policy_net: DQN, target_net: DQN):
         optimizer = optim.AdamW(policy_net.parameters())

@@ -1,8 +1,10 @@
+from src.minihack.env import Env
 from src.path_finding.astar_runner import AStarRunner
 from src.metrics import Analyzer
 from src.path_finding.heuristics import Heuristics
+from src.rl.rl_runner import RLRunner
 
-analyzer = Analyzer(
+"""analyzer = Analyzer(
     algorithms=[
         AStarRunner(),
         AStarRunner(heuristic=Heuristics.manhattan),
@@ -16,3 +18,9 @@ analyzer = Analyzer(
 analyzer.analyze()
 
 print(analyzer.metrics)
+"""
+
+
+rl = RLRunner(Env())
+
+rl.run(verbose=True)
