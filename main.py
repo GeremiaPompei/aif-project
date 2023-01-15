@@ -1,7 +1,10 @@
+from src.minihack.env import Env
 from src.path_finding.astar_runner import AStarRunner
 from src.metrics import Analyzer
 from src.path_finding.heuristics import Heuristics
+from src.rule_based.rule_based_runner import RuleBasedRunner
 
+"""
 analyzer = Analyzer(
     algorithms=[
         AStarRunner(),
@@ -16,3 +19,8 @@ analyzer = Analyzer(
 analyzer.analyze()
 
 print(analyzer.metrics)
+"""
+
+rbr = RuleBasedRunner(Env())
+
+rbr.run()
