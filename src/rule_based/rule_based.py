@@ -1,10 +1,15 @@
-from functools import reduce
+import gym
+import minihack
+from nle import nethack
 
+from IPython.display import clear_output 
+import random
+from random import randint
+from functools import reduce
 import numpy as np
 
 all_openings = {}
 overall_steps = 0
-
 
 # function to find cheracters position
 def char_pos(obs, chars=['@']):
@@ -59,11 +64,11 @@ def pick_key(env, obs):
     key_pos = char_pos(obs, '(')
     if key_pos == []:
         print("no key found")
-        return False
+        return False, env, obs
     else:
-        reach_coordinates(env, obs, key_pos)
+        env, obs = reach_coordinates(env, obs, key_pos)
         print("key found")
-        return True
+        return True, env, obs
 
 
 def reach_coordinates(env, obs, to_reach):
@@ -71,7 +76,7 @@ def reach_coordinates(env, obs, to_reach):
     pos = char_pos(obs, chars=['@'])
     player_x, player_y = pos[0][0], pos[0][1]
 
-    print(pos)
+    #print(pos)
     if player_x != to_reach[0][0]:
         if player_x < to_reach[0][0]:
             stp = 2
@@ -86,7 +91,7 @@ def reach_coordinates(env, obs, to_reach):
             player_x, player_y = pos[0][0], pos[0][1]
             overall_steps += 1
 
-        print(pos)
+        #print(pos)
 
     if player_y != to_reach[0][1]:
         if player_y < to_reach[0][1]:
@@ -105,110 +110,24 @@ def reach_coordinates(env, obs, to_reach):
         print(pos)
     print("step number: ", overall_steps)
     env.render()
-    # return env
-
-
-def get_closest_door():
-    # gets the closest door in respet to the player
-    pos = char_pos(obs, chars=['@'])
-    player_x, player_y = pos[0][0], pos[0][1]
-
-    doors = char_pos(obs, chars=['+'])
-
-    clostest_door = doors[0][0]
-    distance = ((doors[0][0] - player_x) ** 2 + (doors[0][1] - player_y) ** 2) ** 0.5
-
-    for door in doors:
-        print(door[0], door[1])
-
-
-def reach_door(observations, environment):
-    # using the first two characthers of the first array returnd by char surrounding you can identify where the door is
-    """
-    '.' '.' '.' the door is south
-    ' ' '|' '.' the door is west
-    '.' '|' ' ' the door is est
-    ' ' ' ' ' ' the door is north
-
-    Special case:
-    ----
-    +...
-    |...
-    |...
-
-    first row is '-' '-' '-' and second is ' ' '+' '.' door is west
-
-    ----
-    ...+
-    ...|
-    ...|
-
-    first row is '-' '-' '-' and second is '.' '+' ' ' door is est
-
-    """
-    global overall_steps
-
-    door_surroundings = char_surroundings(observations, 1, 1, '+')
-    coord_to_reach = char_pos(observations, '+')
-
-    # this step is done in order to open the door and traverse it
-    stp = 0
-
-    if door_surroundings[0] == ['.', '.', '.']:
-        print("south")
-        coord_to_reach[0][0] = coord_to_reach[0][0] - 1
-        stp = 2
-    elif door_surroundings[0] == [' ', '|', '.'] or (
-            door_surroundings[0] == ['-', '-', '-'] and door_surroundings[1] == [' ', '+', '.']) or (
-            door_surroundings[0] == [' ', '-', '-'] and door_surroundings[1] == [' ', '+', '.']):
-        print("west")
-        coord_to_reach[0][1] = coord_to_reach[0][1] + 1
-        stp = 3
-    elif door_surroundings[0] == ['.', '|', ' '] or (
-            door_surroundings[0] == ['-', '-', '-'] and door_surroundings[1] == ['.', '+', ' ']) or (
-            door_surroundings[0] == ['-', '-', ' '] and door_surroundings[1] == ['.', '+', ' ']):
-        print("est")
-        coord_to_reach[0][1] = coord_to_reach[0][1] - 1
-        stp = 1
-    elif door_surroundings[0] == [' ', ' ', ' ']:
-        print("north")
-        coord_to_reach[0][0] = coord_to_reach[0][0] + 1
-        stp = 0
-    else:
-        print("error locating door")
-        return False, 0
-
-    reach_coordinates(environment, observations, coord_to_reach)
-
-    flag = 0
-    while flag < 5:
-        prev_player_pos = char_pos(observations, '@')
-        environment.step(stp)
-        overall_steps += 1
-        if prev_player_pos != char_pos(observations, '@'):
-            break
-        flag += 1
-        print("door tryed n. ", flag)
-
-    env.render()
-    return True, stp
+    return env, obs
 
 def reach_stairs_down(observations, environment):
   stairs_pos = char_pos(observations, '>')
   print("stairs_pos ", stairs_pos)
   if stairs_pos != []:
     stairs_pos[0][1] -= 1
-    reach_coordinates(environment, observations, stairs_pos)
-    return True
-  return False
+    environment, observations = reach_coordinates(environment, observations, stairs_pos)
+    return True, environment, observations
+  return False, environment, observations
 
 def reach_stairs_up(observations, environment):
   stairs_pos = char_pos(observations, '<')
   if stairs_pos != []:
     stairs_pos[0][1] -= 1
-    reach_coordinates(environment, observations, stairs_pos)
-    return True
-  return False
+    environment, observations = reach_coordinates(environment, observations, stairs_pos)
+    return True, environment, observations
+  return False, environment, observations
 
 
 def get_lateral_direction(current_dir=0):
@@ -257,9 +176,9 @@ def next_in_direction_char(observations, direction, char='#', check_laterals=Fal
     return False
 
 
-def detect_impasse(observations, direction):
-    observations, reward, done, info = env.step(direction)
-    env.render()
+def detect_impasse(observations, environment, direction):
+    observations, reward, done, info = environment.step(direction)
+    environment.render()
 
     if direction == 0 or direction == 2:
         if next_in_direction_char(observations, 1, char=' '):
@@ -331,13 +250,13 @@ def get_next_direction(direction, player_fov):
             return 0
 
 
-def navigate_corridor(observations, direction, previous_position, random_movement=False, random_state=42):
+def navigate_corridor(observations, environment, direction, previous_position, random_movement=False, random_state=42):
     global overall_steps
     path_followed = []
     local_steps = 0
     message = ""
     while next_in_direction_char(observations, direction) and local_steps < 15:
-        observations, reward, done, info = env.step(direction)
+        observations, reward, done, info = environment.step(direction)
         overall_steps += 1
 
         if random_movement == True:
@@ -355,7 +274,7 @@ def navigate_corridor(observations, direction, previous_position, random_movemen
                     direction -= 1
                     if direction < 0:
                         direction = 3
-            observations, reward, done, info = env.step(direction)
+            observations, reward, done, info = environment.step(direction)
             overall_steps += 1
 
             if (previous_position == char_pos(observations)):
@@ -374,15 +293,15 @@ def navigate_corridor(observations, direction, previous_position, random_movemen
     player_fov = player_surroundings(observations)
 
     if is_opening_in_direction(observations, direction):
-        observations, reward, done, info = env.step(direction)
+        observations, reward, done, info = environment.step(direction)
         path_followed.append(direction)
-        env.render()
-        observations, reward, done, info = env.step(direction)
+        environment.render()
+        observations, reward, done, info = environment.step(direction)
         path_followed.append(direction)
-        env.render()
+        environment.render()
         print("in room ")
         return path_followed, "room", direction
-    elif detect_impasse(observations, direction):
+    elif detect_impasse(observations, environment, direction):
         print("impasse")
         print("direction ", direction)
         return path_followed, "impasse", direction
@@ -391,16 +310,16 @@ def navigate_corridor(observations, direction, previous_position, random_movemen
         direction = get_next_direction(direction, player_fov)
 
         print(direction)
-        env.render()
-        new_path, message, direction = navigate_corridor(observations, direction, previous_position)
+        environment.render()
+        new_path, message, direction, observations, environment = navigate_corridor(observations, environment, direction, previous_position)
         if type(new_path) != 'NoneType':
             path_followed.extend(new_path)
 
-        return path_followed, message, direction
+        return path_followed, message, direction, observations, environment
 
 
 # all_openings = {'[0,0]':False}
-def get_all_openings(observaions, environment, openings_sofar={}):
+def get_all_openings(observaions, openings_sofar={}):
     doors = char_pos(observaions, chars=['+'])
     for door in doors:
         if str(door) not in openings_sofar:
@@ -516,7 +435,7 @@ def allign_to_opening(observations, environment, coords=[0,0]):
 
     #wrapping the coords to send to the reach_coordinates now is list[x,y] should be list[[x,y]] due to how usually the coords for a  are taken
     new_coords_to_reach = [coord_to_reach]
-    reach_coordinates(environment, observations, new_coords_to_reach)
+    environment, observations = reach_coordinates(environment, observations, new_coords_to_reach)
 
     flag = 0
     while flag < 5:
@@ -529,7 +448,7 @@ def allign_to_opening(observations, environment, coords=[0,0]):
       print("door tryed n. ", flag)
 
     environment.render()
-    return True, stp
+    return True, stp, environment, observations
 
 def allign_to_closest_opening(observations, environment, openings):
   coords = get_closest_opening(openings, observations)
@@ -562,6 +481,7 @@ def walk_corridor(observations, environment, steps, backwards=False):
 
         observations, reward, done, info = environment.step(step)
         environment.render()
+    return observations, environment
 
 
 def final_check_before_next_iteration(observations, environment, direction):
@@ -633,8 +553,8 @@ def final_check_before_next_iteration(observations, environment, direction):
                         direction = 1
                     observations, reward, done, info = environment.step(direction)
                     observations, reward, done, info = environment.step(direction)
-                final_check_before_next_iteration(observations, environment, direction)
-
+                observations, environment = final_check_before_next_iteration(observations, environment, direction)
+    return observations, environment
 
 def legal_opening(observations, door_coord):
     # this method checks if the selected door is in a reachable position from the player position
@@ -698,17 +618,29 @@ def get_direction(coords1, coords2):
         return "same location"
 
 
-def solution():
+def solution(obs, env):
     global overall_steps
     stop = False
+    
+    first_key = False
+    first_key_step = 0
+    
+    first_door = False
+    first_door_step = 0
+    
     while stop == False and overall_steps < 1000:
         overall_steps += 1
-        if reach_stairs_down(obs, env) == False:
+        found_stairs, obs, env = reach_stairs_down(obs, env)
+        if  found_stairs == False:
             stop = False
-            if pick_key(env, obs) == True:
+            found_key, obs, env = pick_key(env, obs)
+            if  found_key == True:
+                if first_key == False:
+                    first_key = True
+                    first_key_step = overall_steps
                 print("got key")
 
-            all_openings = get_all_openings(obs, env)
+            all_openings = get_all_openings(obs)
             closest_opening = get_closest_opening(all_openings, obs)
             random_chance = 42
             if closest_opening == [0, 0]:
@@ -716,14 +648,16 @@ def solution():
                 random_chance = 65
             print("next closest opening ", closest_opening)
 
-            succeed, direction = allign_to_closest_opening(obs, env, openings=all_openings)
+            succeed, direction, env, obs = allign_to_closest_opening(obs, env, openings=all_openings)
 
             if succeed:
+                if first_door == False:
+                    first_door_step = overall_steps
                 all_openings[str(closest_opening)] = True
-                corridor_path, message, direction = navigate_corridor(obs, direction, [-999, -999], True, random_chance)
+                corridor_path, message, direction, obs, env = navigate_corridor(obs, env, direction, [-999, -999], True, random_chance)
                 if message == "impasse":
                     print("going back from impasse")
-                    walk_corridor(obs, env, corridor_path, True)
+                    obs, env = walk_corridor(obs, env, corridor_path, True)
                 elif message == "room":
                     print(message)
                 else:
@@ -735,8 +669,10 @@ def solution():
                 print("COULD NOT ALLIGN")
                 stop = True
                 break
-            final_check_before_next_iteration(obs, env, direction)
+            obs, env = final_check_before_next_iteration(obs, env, direction)
             input()
         else:
             print("stairs found")
-            stop = True
+            return True, overall_steps, first_key_step, first_door_step, first_door_step+2
+    
+    return False, overall_steps, first_key_step, first_door_step, first_door_step+2
