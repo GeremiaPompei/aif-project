@@ -1,8 +1,9 @@
+import time
+
 import gym
 import minihack
 from nle import nethack
 
-from IPython.display import clear_output 
 import random
 from random import randint
 from functools import reduce
@@ -18,23 +19,26 @@ def char_pos(obs, chars=['@']):
 
 def char_surroundings(obs, fov_x=1, fov_y=1, char=''):
     pos = char_pos(obs, chars=[char])
-    player_x, player_y = pos[0][0], pos[0][1]
-    if (player_x - fov_x < 0 or player_x + fov_x > len(obs['chars'])):
-        fov_x = 1
-    if (player_y - fov_y < 0 or player_y + fov_y > len(obs['chars'][0])):
-        fov_y = 1
+    player_x = pos[0][0]
+    player_y = pos[0][1]
+    return char_surroundings_at_coors(obs, 1, 1, player_x, player_y)
+    #player_x, player_y = pos[0][0], pos[0][1]
+    #if (player_x - fov_x < 0 or player_x + fov_x > len(obs['chars'])):
+    #    fov_x = 1
+    #if (player_y - fov_y < 0 or player_y + fov_y > len(obs['chars'][0])):
+    #    fov_y = 1
 
-    fov = [["" for x in range(1 + fov_x * 2)] for y in range(1 + fov_y * 2)]
-    a = 0
-    c = 0
-    for x in range(player_x - fov_x, player_x + fov_x + 1):
-        for y in range(player_y - fov_y, player_y + fov_y + 1):
-            fov[a][c] = chr(obs['chars'][x][y])
-            c += 1
-        c = 0
-        a += 1
+    #fov = [["" for x in range(1 + fov_x * 2)] for y in range(1 + fov_y * 2)]
+    #a = 0
+    #c = 0
+    #for x in range(player_x - fov_x, player_x + fov_x + 1):
+    #    for y in range(player_y - fov_y, player_y + fov_y + 1):
+    #        fov[a][c] = chr(obs['chars'][x][y])
+    #        c += 1
+    #    c = 0
+    #    a += 1
 
-    return fov
+    #return fov
 
 
 def char_surroundings_at_coors(obs, fov_x=1, fov_y=1, player_x=0, player_y=0):
@@ -66,15 +70,18 @@ def pick_key(env, obs):
         print("no key found")
         return False, env, obs
     else:
-        env, obs = reach_coordinates(env, obs, key_pos)
         print("key found")
+        env, obs = reach_coordinates(env, obs, key_pos)
+        print("key picked")
         return True, env, obs
 
 
 def reach_coordinates(env, obs, to_reach):
     global overall_steps
     pos = char_pos(obs, chars=['@'])
-    player_x, player_y = pos[0][0], pos[0][1]
+    #print("in reach coordinates pos ", pos)
+    player_x = pos[0][0]
+    player_y = pos[0][1]
 
     #print(pos)
     if player_x != to_reach[0][0]:
@@ -300,11 +307,11 @@ def navigate_corridor(observations, environment, direction, previous_position, r
         path_followed.append(direction)
         environment.render()
         print("in room ")
-        return path_followed, "room", direction
+        return path_followed, "room", direction, observations, environment
     elif detect_impasse(observations, environment, direction):
         print("impasse")
         print("direction ", direction)
-        return path_followed, "impasse", direction
+        return path_followed, "impasse", direction, observations, environment
     else:
         print("change direction")
         direction = get_next_direction(direction, player_fov)
@@ -431,7 +438,7 @@ def allign_to_opening(observations, environment, coords=[0,0]):
       stp = 0
     else:
       print("error locating door")
-      return False, 0
+      return False, 0, environment, observations
 
     #wrapping the coords to send to the reach_coordinates now is list[x,y] should be list[[x,y]] due to how usually the coords for a  are taken
     new_coords_to_reach = [coord_to_reach]
@@ -618,7 +625,7 @@ def get_direction(coords1, coords2):
         return "same location"
 
 
-def solution(obs, env):
+def solution(env, obs):
     global overall_steps
     stop = False
     
@@ -630,18 +637,18 @@ def solution(obs, env):
     
     while stop == False and overall_steps < 1000:
         overall_steps += 1
-        found_stairs, obs, env = reach_stairs_down(obs, env)
+        found_stairs, env, obs = reach_stairs_down(obs, env)
         if  found_stairs == False:
             stop = False
-            found_key, obs, env = pick_key(env, obs)
+            found_key, env, obs = pick_key(env, obs)
             if  found_key == True:
                 if first_key == False:
                     first_key = True
                     first_key_step = overall_steps
                 print("got key")
 
-            all_openings = get_all_openings(obs)
-            closest_opening = get_closest_opening(all_openings, obs)
+            all_openings = get_all_openings(obs)        
+            closest_opening = get_closest_opening(all_openings, obs)      
             random_chance = 42
             if closest_opening == [0, 0]:
                 closest_opening = get_closest_opening(all_openings, obs, False)
@@ -649,12 +656,12 @@ def solution(obs, env):
             print("next closest opening ", closest_opening)
 
             succeed, direction, env, obs = allign_to_closest_opening(obs, env, openings=all_openings)
-
             if succeed:
                 if first_door == False:
                     first_door_step = overall_steps
                 all_openings[str(closest_opening)] = True
                 corridor_path, message, direction, obs, env = navigate_corridor(obs, env, direction, [-999, -999], True, random_chance)
+                print("corridor_path ", corridor_path)
                 if message == "impasse":
                     print("going back from impasse")
                     obs, env = walk_corridor(obs, env, corridor_path, True)

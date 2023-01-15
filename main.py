@@ -21,6 +21,6 @@ analyzer.analyze()
 print(analyzer.metrics)
 """
 
-rbr = RuleBasedRunner(Env())
+rbr = RuleBasedRunner(Env(max_episode_steps = 1000))
 
 rbr.run()

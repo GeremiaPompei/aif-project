@@ -13,5 +13,5 @@ class RuleBasedRunner(AlgorithmRunner):
     def init_env(self, env: Env):
         self.env = env
 
-    def run(self, verbose: bool = True) -> tuple[bool, int, float, float, float]:
-        is_win, overall_steps, first_key_step, first_door_step, first_corridor_step = solution(self.env.env, self.env.obs)
+    def run(self) -> tuple[bool, int, float, float, float]:
+        return solution(self.env.env, self.env.obs)
