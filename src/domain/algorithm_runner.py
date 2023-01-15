@@ -1,7 +1,10 @@
 from src.minihack.env import Env
+from abc import ABC, abstractmethod
 
 
-class AlgorithmRunner:
+class AlgorithmRunner(ABC):
+
+    @abstractmethod
     def init_env(self, env: Env) -> None:
         """
         Environment initializer.
@@ -10,6 +13,7 @@ class AlgorithmRunner:
         """
         pass
 
+    @abstractmethod
     def run(self) -> tuple[bool, float, float, float, float]:
         """
         Algorithm run function

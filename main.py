@@ -10,7 +10,7 @@ analyzer = Analyzer(
         AStarRunner(heuristic=Heuristics.walkable_steps_in_matrix),
     ],
     env_n=3,
-    max_episode_steps=2,
+    max_episode_steps=1000,
 )
 
 analyzer.analyze()

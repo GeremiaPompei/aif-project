@@ -23,7 +23,7 @@ class AStar:
     def find(self, targets_pos, already_visited_pos: list[Node] = [], visited_edges: dict[Edge, int] = {}, invalid_nodes: list[Node] = [], verbose: bool = True):
         curr = self.graph.root
         previous_pos = (curr.x, curr.y)
-        self.set_weights(targets_pos)
+        self.set_weights(targets_pos, curr)
         edges = [e for e in curr.edges_to if e.weight is not None]
         for edge in edges:
             if edge in visited_edges:
@@ -31,9 +31,7 @@ class AStar:
             if edge.node_to.id_node in already_visited_pos:
                 edge.node_to.weight += already_visited_pos[edge.node_to.id_node]
 
-        edges.sort(key=lambda e: e.weight + e.node_to.weight + (
-            self.heuristic(self.env, curr.id_node, targets_pos) if self.heuristic is not None else 0
-        ))
+        edges.sort(key=lambda e: e.weight + e.node_to.weight)
         edge = edges[0]
         step = curr.action_move(edge)
         if edge.node_to.content in Symbols.DOOR_CLOSE_CHARS:
@@ -78,7 +76,7 @@ class AStar:
 
         return not self.graph.bfs(func)
 
-    def set_weights(self, targets_pos: list[tuple[int, int]]):
+    def set_weights(self, targets_pos: list[tuple[int, int]], curr):
         nodes = []
 
         def f(n: MHNode):
@@ -87,6 +85,10 @@ class AStar:
 
         self.graph.bfs(f)
 
+        if self.heuristic:
+            for node in nodes:
+                node.weight = self.heuristic(self.env, curr.id_node, node.id_node)
+
         old_nodes = nodes.copy()
         new_nodes = []
         weight = 0
@@ -94,7 +96,6 @@ class AStar:
             for node in old_nodes:
                 for edge in node.edges_from:
                     edge.weight = weight
-                    edge.node_from.weight = node.weight + 0.5
                     if edge.node_from not in nodes:
                         nodes.append(edge.node_from)
                         new_nodes.append(edge.node_from)
