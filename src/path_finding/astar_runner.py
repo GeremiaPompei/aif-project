@@ -30,17 +30,17 @@ class AStarRunner(AlgorithmRunner):
         self.env = None
         self.algorithm = None
         self.profiler = None
+        self.heuristic = heuristic
         if env is not None:
             self.init_env(env)
-        self.heuristic = heuristic
 
     def init_env(self, env: Env):
         self.env = env
-        self.algorithm = AStar(env, is_valid_edge, self.heuristic)
+        self.algorithm = AStar(env, self.heuristic)
 
     def _get_target(self, already_visited_pos):
         for targets in self.targets_list:
-            if not self.algorithm.reachable(targets):
+            if len(self.env.find_all_chars_pos(targets)) == 0:
                 continue
             if targets[0] in Symbols.CORRIDOR_CHARS:
                 corridor_not_visited = [pos for pos in self.env.find_all_chars_pos(Symbols.CORRIDOR_CHARS) if
@@ -57,7 +57,6 @@ class AStarRunner(AlgorithmRunner):
 
     def run(self, verbose: bool = True) -> tuple[bool, int, float, float, float]:
         self.env.reset()
-        self.algorithm.refresh_graph()
         already_visited_pos, visited_edges, invalid_nodes = {}, {}, []
         if verbose:
             self.env.render()
@@ -66,9 +65,7 @@ class AStarRunner(AlgorithmRunner):
             targets_pos = self._get_target(set(already_visited_pos.keys()))
             if len(targets_pos) == 0:
                 break
-            self.algorithm.find(targets_pos,
-                                already_visited_pos=already_visited_pos, visited_edges=visited_edges,
-                                invalid_nodes=invalid_nodes, verbose=verbose)
+            self.algorithm.find(targets_pos)
             total_steps += 1
             print(f"Step {total_steps}/{self.env.max_episode_steps}", flush=True)
             if steps_first_key is None and self.env.over_hero_symbol == Symbols.KEY_CHAR:

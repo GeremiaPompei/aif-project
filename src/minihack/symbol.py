@@ -6,14 +6,18 @@ class Symbol:
         self.char = char if str(char).isnumeric() else ord(char)
         self.color = color if str(color).isnumeric() else Colors.COLORS[color]
 
-    def __hash__(self):
-        return hash((self.char, self.color))
-
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
 
+    def __hash__(self):
+        return hash((self.char, self.color))
+
     def __str__(self):
         return f"Symbol({chr(self.char)}, {Colors.COLORS_NUMS[self.color]}))"
+
+    @staticmethod
+    def from_obs(obs, px, py):
+        return Symbol(obs["chars"][px, py], obs["colors"][px, py])
 
 
 class Symbols:

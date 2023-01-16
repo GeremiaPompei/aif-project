@@ -33,7 +33,7 @@ class Env:
         poss = []
         for x in range(self.shape[0]):
             for y in range(self.shape[1]):
-                if Symbol(self.obs['chars'][x, y], self.obs['colors'][x, y]) in symbols:
+                if Symbol.from_obs(self.obs, x, y) in symbols:
                     poss.append((x, y))
         return poss
 

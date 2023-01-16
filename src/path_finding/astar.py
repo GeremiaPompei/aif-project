@@ -1,104 +1,105 @@
 from typing import Callable
-
-from nle import nethack
-
-from src.data_structure.graph import EOS, Node, Edge
+from nle.nethack import CompassDirection as directions, CompassIntercardinalDirection as inter_directions
 from src.minihack.actions import ACTIONS_DICT
 from src.minihack.env import Env
-from src.minihack.mh_graph import MHNode, MHGraph
 from src.minihack.symbol import Symbols, Symbol
 
 
+class ASNode:
+    def __init__(self, symbol: Symbol, pos: tuple[int, int]):
+        self.symbol = symbol
+        self.pos = pos
+        self.h = 0
+        self.g = 0
+
+    def f(self):
+        return self.g + self.h
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
+    def __hash__(self):
+        return hash((*self.pos, self.symbol))
+
+NEIGBOR_STEPS = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
 class AStar:
 
-    def __init__(self, env: Env, valid_edge_func: Callable, heuristic: Callable = lambda env, hero_pos, target_pos: 0):
+    def __init__(self, env: Env, heuristic: Callable = None):
         self.env = env
-        self.valid_edge_func = valid_edge_func
         self.heuristic = heuristic
-        self.graph = MHGraph(self.env, self.valid_edge_func)
 
-    def refresh_graph(self, invalid_nodes=[]):
-        self.graph = MHGraph(self.env, self.valid_edge_func, invalid_nodes=invalid_nodes)
+    def find(self, targets_pos):
+        start = ASNode(Symbols.HERO_CHAR, self.env.find_first_char_pos(Symbols.HERO_CHAR))
+        open_list: list[ASNode] = [start]
+        close_list = {}
+        while len(open_list) > 0:
+            open_list.sort(key=lambda x: x.f())
+            curr = open_list.pop(0)
+            close_list[curr.pos] = curr
+            if curr.pos in targets_pos:
+                break
 
-    def find(self, targets_pos, already_visited_pos: list[Node] = [], visited_edges: dict[Edge, int] = {}, invalid_nodes: list[Node] = [], verbose: bool = True):
-        curr = self.graph.root
-        previous_pos = (curr.x, curr.y)
-        self.set_weights(targets_pos, curr)
-        edges = [e for e in curr.edges_to if e.weight is not None]
-        for edge in edges:
-            if edge in visited_edges:
-                edge.weight += visited_edges[edge]
-            if edge.node_to.id_node in already_visited_pos:
-                edge.node_to.weight += already_visited_pos[edge.node_to.id_node]
+            cl = list(close_list.values())
+            px, py = curr.pos
+            for kx, ky in NEIGBOR_STEPS:
+                kpx = kx + px
+                kpy = ky + py
+                symbol = Symbol.from_obs(self.env.obs, kpx, kpy)
+                if symbol in Symbols.WALKABLE_SYMBOLS:
+                    child = ASNode(symbol, (kpx, kpy))
+                    if child not in open_list + cl:
+                        child.g = curr.g + 1
+                        if self.heuristic:
+                            child.h = self.heuristic(self.env, child.pos, targets_pos)
+                        open_list.append(child)
 
-        edges.sort(key=lambda e: e.weight + e.node_to.weight)
-        edge = edges[0]
-        step = curr.action_move(edge)
-        if edge.node_to.content in Symbols.DOOR_CLOSE_CHARS:
-            self.env.step(ACTIONS_DICT[nethack.Command.APPLY])
-        self.env.over_hero_symbol = edge.node_to.content
-        self.env.step(step)
-        pos = (curr.x, curr.y)
-        if pos in already_visited_pos:
-            already_visited_pos[pos] += 1
-        else:
-            already_visited_pos[pos] = 1
-        inv_edge = Edge(edge.node_from, edge.node_to, edge.weight)
-        if inv_edge in visited_edges:
-            visited_edges[inv_edge] += 1
-        else:
-            visited_edges[inv_edge] = 1
-        self.refresh_graph(invalid_nodes=invalid_nodes)
-        if edge.node_to.content not in Symbols.DOOR_CLOSE_CHARS and previous_pos[0] == curr.x and \
-                previous_pos[1] == curr.y and edge.node_to.content == Symbols.OBSCURE_CHAR:
-            invalid_nodes.append(edge.node_to)
-        if verbose:
-            self.env.render()
+        actions = []
 
-    def reachable(self, symbols: list[Symbol]):
-        def func(n):
-            if n.content in symbols:
-                return [True, EOS]
+        while curr.symbol != Symbols.HERO_CHAR:
+            neighbors: list[ASNode] = []
+
+            px, py = curr.pos
+            for kx, ky in NEIGBOR_STEPS:
+                key = (px + kx, py + ky)
+                if key in close_list:
+                    neighbors.append(close_list[key])
+                    del close_list[key]
+
+            neighbors.sort(key=lambda x: x.f())
+            if len(neighbors) > 0:
+                best_neighbor = neighbors[0]
+                action = self.action_move(best_neighbor.pos, curr.pos)
+                actions.append(action)
+                curr = best_neighbor
             else:
-                return None
+                break
 
-        return self.graph.bfs(func)
+        actions.sort(reverse=True)
 
-    def end_match(self, targets_pos: list[tuple[int, int]]):
-        if targets_pos is None:
-            return True
+        for action in actions:
+            self.env.step(action)
 
-        def func(n):
-            if n.id_node in targets_pos and n.content != Symbols.HERO_CHAR:
-                return [True, EOS]
-            else:
-                return None
+            self.env.render(sleep_time=1)
 
-        return not self.graph.bfs(func)
 
-    def set_weights(self, targets_pos: list[tuple[int, int]], curr):
-        nodes = []
+    def action_move(self, curr, trg):
+        diff_x = trg[0] - curr[0]
+        diff_y = trg[1] - curr[1]
+        if diff_x == -1 and diff_y == -1:
+            return ACTIONS_DICT[inter_directions.NW]
+        if diff_x == -1 and diff_y == 0:
+            return ACTIONS_DICT[directions.N]
+        if diff_x == -1 and diff_y == 1:
+            return ACTIONS_DICT[inter_directions.NE]
+        if diff_x == 0 and diff_y == -1:
+            return ACTIONS_DICT[directions.W]
+        if diff_x == 0 and diff_y == 1:
+            return ACTIONS_DICT[directions.E]
+        if diff_x == 1 and diff_y == -1:
+            return ACTIONS_DICT[inter_directions.SW]
+        if diff_x == 1 and diff_y == 0:
+            return ACTIONS_DICT[directions.S]
+        if diff_x == 1 and diff_y == 1:
+            return ACTIONS_DICT[inter_directions.SE]
 
-        def f(n: MHNode):
-            if (n.x, n.y) in targets_pos:
-                nodes.append(n)
-
-        self.graph.bfs(f)
-
-        if self.heuristic:
-            for node in nodes:
-                node.weight = self.heuristic(self.env, curr.id_node, node.id_node)
-
-        old_nodes = nodes.copy()
-        new_nodes = []
-        weight = 0
-        while len(old_nodes) > 0:
-            for node in old_nodes:
-                for edge in node.edges_from:
-                    edge.weight = weight
-                    if edge.node_from not in nodes:
-                        nodes.append(edge.node_from)
-                        new_nodes.append(edge.node_from)
-            old_nodes = new_nodes
-            new_nodes = []
-            weight += 1
