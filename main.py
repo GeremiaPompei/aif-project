@@ -18,6 +18,6 @@ analyzer.analyze()
 
 print(analyzer.metrics)"""
 
-alg = AStarRunner(heuristic=Heuristics.manhattan, env=Env(all_visible=True))
+alg = AStarRunner(env=Env(all_visible=False))
 
 alg.run(verbose=True)

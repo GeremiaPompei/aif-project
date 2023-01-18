@@ -10,5 +10,6 @@ class Colors:
     MAGENTA = COLORS['magenta']
     CYAN = COLORS['cyan']
     WHITE = COLORS['white']
+    GOLD = COLORS['gold']
     DEFAULT = COLORS['default']
 
