@@ -7,16 +7,6 @@ from src.domain import AlgorithmRunner
 from src.minihack.env import Env
 
 import logging as lg
-import sys
-
-root = lg.getLogger()
-root.setLevel(lg.INFO)
-
-handler = lg.StreamHandler(sys.stdout)
-handler.setLevel(lg.DEBUG)
-formatter = lg.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-root.addHandler(handler)
 
 
 class Analyzer:
@@ -41,7 +31,8 @@ class Analyzer:
 
     def analyze(self):
         n = self._env_n_
-        for algo in self._algs:
+        for n_algo, algo in enumerate(self._algs):
+            lg.info(f"[{n_algo + 1}/{len(self._algs)}] - {str(algo)}")
             total_steps = 0
             steps_first_door = 0
             steps_first_key = 0
@@ -61,7 +52,7 @@ class Analyzer:
                 start = time.time()
 
                 # run algorithm
-                win, ts, sfk, sfd, sfc = algo.run()
+                algo.run()
 
                 mu = process.memory_info().rss
 
@@ -73,24 +64,24 @@ class Analyzer:
                 lg.info(f"Memory usage: {mu} bytes")
                 memory_usage += mu
 
-                lg.info("Win" if win else "Lost")
-                if win:
+                lg.info("Win" if algo.win else "Lost")
+                if algo.win:
                     total_wins += 1
 
-                lg.info(f"Total steps: {ts}")
-                total_steps += ts
+                lg.info(f"Total steps: {algo.total_steps}")
+                total_steps += algo.total_steps
 
-                if sfk is not None:
-                    lg.info(f"Steps first key: {sfk}")
-                    steps_first_key += sfk
+                if algo.steps_first_key is not None:
+                    lg.info(f"Steps first key: {algo.steps_first_key}")
+                    steps_first_key += algo.steps_first_key
 
-                if sfd is not None:
-                    lg.info(f"Steps first door: {sfd}")
-                    steps_first_door += sfd
+                if algo.steps_first_door is not None:
+                    lg.info(f"Steps first door: {algo.steps_first_door}")
+                    steps_first_door += algo.steps_first_door
 
-                if sfc is not None:
-                    lg.info(f"Steps first corridor: {sfc}")
-                    steps_first_corridor += sfc
+                if algo.steps_first_corridor is not None:
+                    lg.info(f"Steps first corridor: {algo.steps_first_corridor}")
+                    steps_first_corridor += algo.steps_first_corridor
 
             total_steps = float(total_steps / n)
             steps_first_door = float(steps_first_door / n)

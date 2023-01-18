@@ -1,6 +1,5 @@
 from enum import Enum
 from typing import Callable
-from tqdm import tqdm
 
 from src.domain import AlgorithmRunner
 from src.minihack.env import Env
@@ -22,8 +21,8 @@ class TARGET_TYPES(Enum):
 class PathFindingRunner(AlgorithmRunner):
 
     def __init__(self, heuristic: Callable = None, env: Env = None, sleep_time: float = -1):
-        self.env = None
-        self.algorithm = None
+        super(PathFindingRunner, self).__init__()
+        self.algorithm = AStar(heuristic=heuristic, is_valid_move=self._is_valid_move)
         self.heuristic = heuristic
         self.sleep_time = sleep_time
         self.visited_corridors = set()
@@ -32,7 +31,7 @@ class PathFindingRunner(AlgorithmRunner):
             self.init_env(env)
 
     def init_env(self, env: Env):
-        self.env = env
+        super(PathFindingRunner, self).init_env(env)
         self.algorithm = AStar(env, self.heuristic, is_valid_move=self._is_valid_move)
 
     def run(self) -> tuple[bool, int, float, float, float]:
@@ -41,8 +40,6 @@ class PathFindingRunner(AlgorithmRunner):
         self.unable_pos = set()
         if self.sleep_time > 0:
             self.env.render(self.sleep_time)
-        total_steps, steps_first_key, steps_first_door, steps_first_corridor = 0, None, None, None
-        pbar = tqdm(total=self.env.max_episode_steps)
         while not self.env.done:
             if self.env.over_hero_symbol == Symbols.STAIR_UP_CHAR:
                 break
@@ -56,12 +53,10 @@ class PathFindingRunner(AlgorithmRunner):
                 next_step_symbol = Symbol.from_obs(self.env.obs, next_step[0], next_step[1])
                 if next_step_symbol in Symbols.DOOR_CLOSE_CHARS:
                     self.env.step(cmd.APPLY)
-                    total_steps += 1
-                    pbar.update(1)
+                    self.one_more_step()
                 if not self.env.done:
                     self.env.step(action, next_step_symbol)
-                    total_steps += 1
-                    pbar.update(1)
+                    self.one_more_step()
                     if not self.env.done:
                         next_step_symbol_updated = Symbol.from_obs(self.env.obs, next_step[0], next_step[1])
                         if next_step_symbol_updated in Symbols.DOOR_CLOSE_CHARS \
@@ -71,18 +66,8 @@ class PathFindingRunner(AlgorithmRunner):
                         if self.env.over_hero_symbol in Symbols.CORRIDOR_CHARS:
                             self.visited_corridors.add(self.env.find_first_char_pos(Symbols.HERO_CHAR))
 
-                if steps_first_key is None and self.env.over_hero_symbol == Symbols.KEY_CHAR:
-                    steps_first_key = total_steps
-                if steps_first_door is None and \
-                        self.env.over_hero_symbol in Symbols.DOOR_OPEN_CHARS + Symbols.DOOR_CLOSE_CHARS:
-                    steps_first_door = total_steps
-                if steps_first_corridor is None and self.env.over_hero_symbol in Symbols.CORRIDOR_CHARS:
-                    steps_first_corridor = total_steps
                 if self.env.done:
                     break
-        pbar.close()
-        return (
-                           self.env.over_hero_symbol == Symbols.STAIR_UP_CHAR), total_steps, steps_first_key, steps_first_door, steps_first_corridor
 
     def _valid_discover_floor(self, pos):
         for kx, ky in PathFindingAlgorithm.NEIGHBORS_STEPS.keys():

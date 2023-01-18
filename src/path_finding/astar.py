@@ -6,13 +6,14 @@ from src.path_finding.path_finding_algorithm import PathFindingAlgorithm
 
 class AStar(PathFindingAlgorithm):
 
-    def __init__(self, env: Env, heuristic: Callable = None, is_valid_move: Callable = lambda x: True):
+    def __init__(self, env: Env = None, heuristic: Callable = None, is_valid_move: Callable = lambda x: True):
         super(AStar, self).__init__()
         self.env = env
         self.heuristic_name = heuristic.__name__ if heuristic is not None else None
         self.heuristic = heuristic if heuristic is not None else lambda e, c, p: 0
-        self._init_config()
         self._is_valid_move = is_valid_move
+        if self.env is not None:
+            self._init_config()
 
     def _f(self, x):
         return self.g[x] + self.h[x]
