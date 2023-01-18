@@ -1,23 +1,19 @@
 from src.minihack.env import Env
-from src.path_finding.astar_runner import AStarRunner
+from src.path_finding.path_finding_runner import PathFindingRunner
 from src.metrics import Analyzer
 from src.path_finding.heuristics import Heuristics
 
-"""analyzer = Analyzer(
+analyzer = Analyzer(
     algorithms=[
-        #AStarRunner(),
-        AStarRunner(heuristic=Heuristics.manhattan),
-        AStarRunner(heuristic=Heuristics.euclidean),
-        AStarRunner(heuristic=Heuristics.walkable_steps_in_matrix),
+        PathFindingRunner(),
+        PathFindingRunner(heuristic=Heuristics.manhattan),
+        PathFindingRunner(heuristic=Heuristics.euclidean),
+        PathFindingRunner(heuristic=Heuristics.walkable_steps_in_matrix),
     ],
-    env_n=3,
+    env_n=1,
     max_episode_steps=1000,
 )
 
 analyzer.analyze()
 
-print(analyzer.metrics)"""
-
-alg = AStarRunner(env=Env(all_visible=False), heuristic=Heuristics.walkable_steps_in_matrix)
-
-alg.run(verbose=True)
+print(analyzer.metrics)
