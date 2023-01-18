@@ -1,7 +1,6 @@
-from src.path_finding.path_finding_runner import PathFindingRunner
+from src.path_finding import PathFindingRunner, Heuristics
 from src.metrics import Analyzer
-from src.path_finding.heuristics import Heuristics
-from src.rl.rl_runner import RLRunner
+from src.rl import RLRunner
 
 analyzer = Analyzer(
     algorithms=[
