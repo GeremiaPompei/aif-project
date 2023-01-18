@@ -50,7 +50,19 @@ class AStar:
         self._init_config()
         self._find_targets()
         self._astar()
+
+        ######
+        for x in range(self.env.shape[0]):
+            for y in range(self.env.shape[1]):
+                k = (x, y)
+                if k in self.close_list:
+                    print(str(int(self._f(k))).rjust(2, ' '), end='')
+                else:
+                    print('  ', end='')
+            print()
+        ######
         actions = self._extract_actions()
+
         total_steps = 0
         for action in actions:
             curr = self.env.find_first_char_pos()
@@ -62,14 +74,17 @@ class AStar:
                 total_steps += 1
             self.env.step(action, next_step_symbol)
             total_steps += 1
-            if Symbol.from_obs(self.env.obs, next_step[0], next_step[1]) in Symbols.DOOR_CLOSE_CHARS \
-                    or self.env.find_first_char_pos() != next_step:
+            next_step_symbol_updated = Symbol.from_obs(self.env.obs, next_step[0], next_step[1])
+            if next_step_symbol_updated in Symbols.DOOR_CLOSE_CHARS \
+                    or (
+                    next_step_symbol_updated not in Symbols.DOOR_OPEN_CHARS and
+                    self.env.find_first_char_pos() != next_step
+            ):
                 self.unable_pos.add(next_step)
             if self.env.over_hero_symbol in Symbols.CORRIDOR_CHARS:
                 self.visited_corridors.add(self.env.find_first_char_pos(Symbols.HERO_CHAR))
 
             # TODO
-            print(curr, self.trg, action)
             self.env.render(sleep_time=0.2)
 
         return total_steps
@@ -167,5 +182,5 @@ class AStar:
                     actions.append(action)
                     curr = neighbor
                     break
-        actions.sort(reverse=True)
+        actions.reverse()
         return actions

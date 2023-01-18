@@ -18,6 +18,6 @@ analyzer.analyze()
 
 print(analyzer.metrics)"""
 
-alg = AStarRunner(env=Env(all_visible=False))
+alg = AStarRunner(env=Env(all_visible=False), heuristic=Heuristics.walkable_steps_in_matrix)
 
 alg.run(verbose=True)
