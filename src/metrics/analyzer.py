@@ -29,7 +29,7 @@ class Analyzer:
         """
         self._env_n_ = env_n
         self._algs = algorithms
-        self.metrics = {str(alg): {} for alg in algorithms}
+        self.metrics = {}
         self._max_episode_steps = max_episode_steps
 
     def _generate_env(self) -> Env:
@@ -61,7 +61,7 @@ class Analyzer:
                 start = time.time()
 
                 # run algorithm
-                win, ts, sfk, sfd, sfc = algo.run(verbose=False)
+                win, ts, sfk, sfd, sfc = algo.run()
 
                 mu = process.memory_info().rss
 

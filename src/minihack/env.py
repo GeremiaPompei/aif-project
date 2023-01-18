@@ -6,7 +6,7 @@ import gym
 import minihack
 from nle import nethack
 
-from src.minihack.actions import ACTIONS
+from src.minihack.actions import ACTIONS, ACTIONS_DICT
 from src.minihack.symbol import Symbol, Symbols
 from src.minihack.desfile import gen_desfile
 
@@ -33,7 +33,7 @@ class Env:
         poss = []
         for x in range(self.shape[0]):
             for y in range(self.shape[1]):
-                if Symbol(self.obs['chars'][x, y], self.obs['colors'][x, y]) in symbols:
+                if Symbol.from_obs(self.obs, x, y) in symbols:
                     poss.append((x, y))
         return poss
 
@@ -61,8 +61,11 @@ class Env:
         self.obs = self.env.reset()
         return self.obs
 
-    def step(self, step):
-        self.obs, self.reward, self.done, self.info = self.env.step(step)
+    def step(self, step, target_symbol: Symbol = None):
+        old_hero = self.find_first_char_pos()
+        self.obs, self.reward, self.done, self.info = self.env.step(ACTIONS_DICT[step])
+        if old_hero != self.find_first_char_pos():
+            self.over_hero_symbol = target_symbol
         return self.obs, self.reward, self.done, self.info
 
     def render(self, sleep_time: float = 0.2):

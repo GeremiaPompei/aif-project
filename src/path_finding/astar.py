@@ -1,104 +1,62 @@
 from typing import Callable
-
-from nle import nethack
-
-from src.data_structure.graph import EOS, Node, Edge
-from src.minihack.actions import ACTIONS_DICT
 from src.minihack.env import Env
-from src.minihack.mh_graph import MHNode, MHGraph
-from src.minihack.symbol import Symbols, Symbol
+from src.minihack.symbol import Symbols
+from src.path_finding.path_finding_algorithm import PathFindingAlgorithm
 
 
-class AStar:
+class AStar(PathFindingAlgorithm):
 
-    def __init__(self, env: Env, valid_edge_func: Callable, heuristic: Callable = lambda env, hero_pos, target_pos: 0):
+    def __init__(self, env: Env, heuristic: Callable = None, is_valid_move: Callable = lambda x: True):
+        super(AStar, self).__init__()
         self.env = env
-        self.valid_edge_func = valid_edge_func
-        self.heuristic = heuristic
-        self.graph = MHGraph(self.env, self.valid_edge_func)
+        self.heuristic_name = heuristic.__name__ if heuristic is not None else None
+        self.heuristic = heuristic if heuristic is not None else lambda e, c, p: 0
+        self._init_config()
+        self._is_valid_move = is_valid_move
 
-    def refresh_graph(self, invalid_nodes=[]):
-        self.graph = MHGraph(self.env, self.valid_edge_func, invalid_nodes=invalid_nodes)
+    def _f(self, x):
+        return self.g[x] + self.h[x]
 
-    def find(self, targets_pos, already_visited_pos: list[Node] = [], visited_edges: dict[Edge, int] = {}, invalid_nodes: list[Node] = [], verbose: bool = True):
-        curr = self.graph.root
-        previous_pos = (curr.x, curr.y)
-        self.set_weights(targets_pos, curr)
-        edges = [e for e in curr.edges_to if e.weight is not None]
-        for edge in edges:
-            if edge in visited_edges:
-                edge.weight += visited_edges[edge]
-            if edge.node_to.id_node in already_visited_pos:
-                edge.node_to.weight += already_visited_pos[edge.node_to.id_node]
+    def _init_config(self):
+        self.start = self.env.find_first_char_pos(Symbols.HERO_CHAR)
+        self.open_list: list[tuple[int, int]] = [self.start]
+        self.close_list = []
+        self.g = {}
+        self.h = {}
+        self.trg = None
 
-        edges.sort(key=lambda e: e.weight + e.node_to.weight)
-        edge = edges[0]
-        step = curr.action_move(edge)
-        if edge.node_to.content in Symbols.DOOR_CLOSE_CHARS:
-            self.env.step(ACTIONS_DICT[nethack.Command.APPLY])
-        self.env.over_hero_symbol = edge.node_to.content
-        self.env.step(step)
-        pos = (curr.x, curr.y)
-        if pos in already_visited_pos:
-            already_visited_pos[pos] += 1
-        else:
-            already_visited_pos[pos] = 1
-        inv_edge = Edge(edge.node_from, edge.node_to, edge.weight)
-        if inv_edge in visited_edges:
-            visited_edges[inv_edge] += 1
-        else:
-            visited_edges[inv_edge] = 1
-        self.refresh_graph(invalid_nodes=invalid_nodes)
-        if edge.node_to.content not in Symbols.DOOR_CLOSE_CHARS and previous_pos[0] == curr.x and \
-                previous_pos[1] == curr.y and edge.node_to.content == Symbols.OBSCURE_CHAR:
-            invalid_nodes.append(edge.node_to)
-        if verbose:
-            self.env.render()
+    def __call__(self, targets_poss):
+        self.g[self.start] = 0
+        self.h[self.start] = self.heuristic(self.env, self.start, targets_poss)
+        curr = self.start
+        parents_dict = {self.start: None}
+        while len(self.open_list) > 0:
+            self.open_list.sort(key=self._f)
+            curr = self.open_list.pop(0)
+            if curr in targets_poss:
+                break
+            for kx, ky in PathFindingAlgorithm.NEIGHBORS_STEPS.keys():
+                neighbor = curr[0] + kx, curr[1] + ky
+                if self._is_valid_move(neighbor):
+                    neighbor_curr_g = self.g[curr] + 1
+                    if neighbor in self.open_list:
+                        if self.g[neighbor] <= neighbor_curr_g:
+                            continue
+                    elif neighbor in self.close_list:
+                        if self.g[neighbor] <= neighbor_curr_g:
+                            continue
+                        self.close_list.remove(neighbor)
+                    else:
+                        self.h[neighbor] = self.heuristic(self.env, neighbor, targets_poss)
+                    parents_dict[neighbor] = curr
+                    self.open_list.append(neighbor)
+                    self.g[neighbor] = neighbor_curr_g
 
-    def reachable(self, symbols: list[Symbol]):
-        def func(n):
-            if n.content in symbols:
-                return [True, EOS]
-            else:
-                return None
+            self.close_list.append(curr)
+        self.trg = curr
+        return parents_dict
 
-        return self.graph.bfs(func)
-
-    def end_match(self, targets_pos: list[tuple[int, int]]):
-        if targets_pos is None:
-            return True
-
-        def func(n):
-            if n.id_node in targets_pos and n.content != Symbols.HERO_CHAR:
-                return [True, EOS]
-            else:
-                return None
-
-        return not self.graph.bfs(func)
-
-    def set_weights(self, targets_pos: list[tuple[int, int]], curr):
-        nodes = []
-
-        def f(n: MHNode):
-            if (n.x, n.y) in targets_pos:
-                nodes.append(n)
-
-        self.graph.bfs(f)
-
-        if self.heuristic:
-            for node in nodes:
-                node.weight = self.heuristic(self.env, curr.id_node, node.id_node)
-
-        old_nodes = nodes.copy()
-        new_nodes = []
-        weight = 0
-        while len(old_nodes) > 0:
-            for node in old_nodes:
-                for edge in node.edges_from:
-                    edge.weight = weight
-                    if edge.node_from not in nodes:
-                        nodes.append(edge.node_from)
-                        new_nodes.append(edge.node_from)
-            old_nodes = new_nodes
-            new_nodes = []
-            weight += 1
+    def __str__(self):
+        if self.heuristic_name is None:
+            return "Dijkstra"
+        return f"AStar(heuristic: {self.heuristic_name})"

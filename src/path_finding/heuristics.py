@@ -4,27 +4,38 @@ import math
 from src.minihack.symbol import Symbol, Symbols
 
 
+def _compute_mean(target_poss: list[tuple[int, int]], callback):
+    if len(target_poss) == 0:
+        return 0
+    dist = 0
+    for x_target, y_target in target_poss:
+        dist += callback(x_target, y_target)
+    return dist / len(target_poss)
+
+
 class Heuristics:
 
     @staticmethod
-    def manhattan(env: Env, hero_pos: tuple[int, int], target_pos: tuple[int, int]):
-        x_hero, y_hero = hero_pos
-        x_target, y_target = target_pos
-        return abs(x_hero - x_target) + abs(y_hero - y_target)
+    def manhattan(env: Env, hero_pos: tuple[int, int], target_poss: list[tuple[int, int]]):
+        return _compute_mean(
+            target_poss,
+            lambda x_target, y_target: abs(hero_pos[0] - x_target) + abs(hero_pos[1] - y_target),
+        )
 
     @staticmethod
-    def euclidean(env: Env, hero_pos: tuple[int, int], target_pos: tuple[int, int]):
-        x_hero, y_hero = hero_pos
-        x_target, y_target = target_pos
-        return math.sqrt((x_hero - x_target) ** 2 + (y_hero - y_target) ** 2)
+    def euclidean(env: Env, hero_pos: tuple[int, int], target_poss: list[tuple[int, int]]):
+        return _compute_mean(
+            target_poss,
+            lambda x_target, y_target: math.sqrt((hero_pos[0] - x_target) ** 2 + (hero_pos[1] - y_target) ** 2),
+        )
 
     @staticmethod
-    def walkable_steps_in_matrix(env: Env, hero_pos: tuple[int, int], target_pos: tuple[int, int]):
-        x_hero, y_hero = hero_pos
-        x_target, y_target = target_pos
-        single_dist = 0
-        for x in range(min(x_hero, x_target), max(x_hero, x_target) + 1):
-            for y in range(min(y_hero, y_target), max(y_hero, y_target) + 1):
-                if Symbol(env.obs["chars"][x, y], env.obs["colors"][x, y]) not in Symbols.WALKABLE_SYMBOLS:
-                    single_dist += 1
-        return single_dist
+    def walkable_steps_in_matrix(env: Env, hero_pos: tuple[int, int], target_poss: list[tuple[int, int]]):
+        def callback(x_target, y_target):
+            dist = 0
+            for x in range(min(hero_pos[0], x_target), max(hero_pos[0], x_target) + 1):
+                for y in range(min(hero_pos[1], y_target), max(hero_pos[1], y_target) + 1):
+                    if Symbol.from_obs(env.obs, x, y) in Symbols.WALKABLE_SYMBOLS:
+                        dist += 1
+            return dist
+        return _compute_mean(target_poss, callback)

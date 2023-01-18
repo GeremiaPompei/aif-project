@@ -1,8 +1,8 @@
-from src.path_finding.astar_runner import AStarRunner
+from src.path_finding.path_finding_runner import PathFindingRunner
 from src.metrics import Analyzer
 
 profiler = Analyzer(
-    algorithm=AStarRunner,
+    algorithm=PathFindingRunner,
     n=10
 )
 
