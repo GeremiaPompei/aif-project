@@ -49,19 +49,8 @@ class AStar:
     def find(self):
         self._init_config()
         self._find_targets()
-        self._astar()
-
-        ######
-        for x in range(self.env.shape[0]):
-            for y in range(self.env.shape[1]):
-                k = (x, y)
-                if k in self.close_list:
-                    print(str(int(self._f(k))).rjust(2, ' '), end='')
-                else:
-                    print('  ', end='')
-            print()
-        ######
-        actions = self._extract_actions()
+        parents_dict = self._astar()
+        actions = self._extract_actions(parents_dict)
 
         total_steps = 0
         for action in actions:
@@ -138,6 +127,7 @@ class AStar:
         self.g[self.start] = 0
         self.h[self.start] = self.heuristic(self.env, self.start, self.targets_poss)
         curr = self.start
+        parents_dict = {self.start: None}
         while len(self.open_list) > 0:
             self.open_list.sort(key=self._f)
             curr = self.open_list.pop(0)
@@ -156,31 +146,23 @@ class AStar:
                         del self.close_list[neighbor]
                     else:
                         self.h[neighbor] = self.heuristic(self.env, neighbor, self.targets_poss)
+                    parents_dict[neighbor] = curr
                     self.open_list.append(neighbor)
                     self.g[neighbor] = neighbor_curr_g
+
             self.close_list.append(curr)
         self.trg = curr
+        return parents_dict
 
-    def _extract_actions(self):
+    def _extract_actions(self, parents_dict):
         actions = []
-        visited = []
         curr = self.trg
         while curr != self.start:
-            neighbors: list[tuple[int, int]] = []
-            px, py = curr
-            visited.append(curr)
-            for kx, ky in NEIGHBORS_STEPS.keys():
-                key = (px + kx, py + ky)
-                if key in self.close_list:
-                    neighbors.append(key)
-            neighbors.sort(key=self._f)
-            for neighbor in neighbors:
-                if neighbor not in visited:
-                    diff_x = curr[0] - neighbor[0]
-                    diff_y = curr[1] - neighbor[1]
-                    action = NEIGHBORS_STEPS[(diff_x, diff_y)]
-                    actions.append(action)
-                    curr = neighbor
-                    break
+            neighbor = parents_dict[curr]
+            diff_x = curr[0] - neighbor[0]
+            diff_y = curr[1] - neighbor[1]
+            action = NEIGHBORS_STEPS[(diff_x, diff_y)]
+            actions.append(action)
+            curr = neighbor
         actions.reverse()
         return actions
