@@ -2,7 +2,7 @@ import math
 import random
 
 import torch
-from torch import nn
+from torch import nn, Tensor
 from torch.functional import F
 
 from src.minihack.actions import ACTIONS
@@ -16,12 +16,12 @@ class DQN(nn.Module):
 
     def __init__(self):
         super(DQN, self).__init__()
-        self.conv1 = nn.Conv2d(1659, 6, 5)
+        self.conv1 = nn.Conv2d(2, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.fc1 = nn.Linear(512, 16)
+        self.fc2 = nn.Linear(16, 84)
+        self.fc3 = nn.Linear(84, len(ACTIONS))
         self.steps_done = 0
 
     def forward(self, x):
@@ -39,6 +39,6 @@ class DQN(nn.Module):
         self.steps_done += 1
         if sample > eps_threshold:
             with torch.no_grad():
-                return self(state).max(1)[1].view(1, 1)
+                return self(state).argmax(1)[0]
         else:
-            return torch.tensor([[random.sample(range(len(ACTIONS)), 1)]])
+            return torch.tensor(random.sample(range(len(ACTIONS)), 1)[0])

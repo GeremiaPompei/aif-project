@@ -1,5 +1,5 @@
 from collections import deque
-from random import random
+from random import sample
 
 
 class ReplayMemory:
@@ -11,4 +11,4 @@ class ReplayMemory:
         self.memory.append(dict(**args))
 
     def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
+        return sample(self.memory, batch_size)

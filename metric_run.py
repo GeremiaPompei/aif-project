@@ -1,9 +1,18 @@
 from src.path_finding.path_finding_runner import PathFindingRunner
 from src.metrics import Analyzer
+from src.path_finding.heuristics import Heuristics
 
-profiler = Analyzer(
-    algorithm=PathFindingRunner,
-    n=10
+analyzer = Analyzer(
+    algorithms=[
+        PathFindingRunner(),
+        PathFindingRunner(heuristic=Heuristics.manhattan),
+        PathFindingRunner(heuristic=Heuristics.euclidean),
+        PathFindingRunner(heuristic=Heuristics.walkable_steps_in_matrix),
+    ],
+    env_n=100,
+    max_episode_steps=1000,
 )
 
-profiler.profile()
+analyzer.analyze()
+
+print(analyzer.metrics)

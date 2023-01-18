@@ -59,6 +59,7 @@ class Env:
 
     def reset(self):
         self.obs = self.env.reset()
+        self.done = False
         return self.obs
 
     def step(self, step, target_symbol: Symbol = None):
