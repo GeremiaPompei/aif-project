@@ -49,27 +49,35 @@ class RLRunner(AlgorithmRunner):
               batch_size: int = 32,
               gamma: float = 0.99,
               tau: float = 0.005):
-        reply_memory = ReplayMemory(memory_size)
         for i in range(n_env):
             lg.info(f"Env n.{i + 1}")
             env.reset()
             target_net = DQN()
-            target_net.load_state_dict(self.policy_net.state_dict())
+            reply_memory = ReplayMemory(memory_size)
             next_state = None
             steps = 0
+            total_reward = 0
+            total_loss = 0
+            loss_count = 0
             while not env.done:
                 state = self._state_from_obs(env)
                 eps_threshold = eps_end + (eps_start - eps_end) * math.exp(-1. * steps / eps_decay)
                 action = self._select_action(state, eps_threshold)
                 env.step(ACTIONS[action])
                 steps += 1
+                total_reward += env.reward
                 reply_memory.push(Record(state=state, action=action, next_state=next_state, reward=env.reward))
                 next_state = state
                 if len(reply_memory.memory) >= batch_size:
-                    self._optimize_model(reply_memory.sample(batch_size), target_net, batch_size, gamma, tau)
+                    loss = self._optimize_model(reply_memory.sample(batch_size), target_net, batch_size, gamma, tau)
+                    total_loss += loss
+                    loss_count += 1
+                self._update_target_weights(target_net, tau)
                 if self.sleep_time > 0:
                     env.render(sleep_time=self.sleep_time)
             lg.info(f"Steps: {steps}")
+            lg.info(f"Total reward: {total_reward}")
+            lg.info(f"Mean loss: {round(total_loss / loss_count, 4)}")
             lg.info(f"Status: {'Win' if env.over_hero_symbol == Symbols.STAIR_UP_CHAR else 'Lost'}")
             if self.model_filename is not None:
                 torch.save(self.policy_net.state_dict(), self.model_filename)
@@ -106,7 +114,9 @@ class RLRunner(AlgorithmRunner):
         loss.backward()
         torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
         optimizer.step()
+        return loss.item()
 
+    def _update_target_weights(self, target_net: DQN, tau: int):
         # mix target_net weights with policy_net according tau parameter
         target_net_state_dict = target_net.state_dict()
         policy_net_state_dict = self.policy_net.state_dict()
