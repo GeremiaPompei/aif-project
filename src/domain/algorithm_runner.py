@@ -22,6 +22,11 @@ class AlgorithmRunner:
         """
         self.env = env
         self.pbar = tqdm(total=self.env.max_episode_steps)
+        self.total_steps = 0
+        self.steps_first_key = None
+        self.steps_first_door = None
+        self.steps_first_corridor = None
+        self.win = None
 
     def one_more_step(self):
         if self.env.done:
