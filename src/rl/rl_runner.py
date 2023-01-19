@@ -56,8 +56,10 @@ class RLRunner(AlgorithmRunner):
             steps += 1
             if self.env is not None:
                 self.one_more_step()
-            total_reward += env.reward
-            reply_memory.push(Record(state=state, action=action, next_state=next_state, reward=env.reward))
+            visible_chars = np.count_nonzero(env.obs['chars'] != ord(' ')) / (env.shape[0] * env.shape[1])
+            reward = env.reward + visible_chars
+            total_reward += reward
+            reply_memory.push(Record(state=state, action=action, next_state=next_state, reward=reward))
             next_state = state
             if len(reply_memory.memory) >= batch_size:
                 loss = self._optimize_model(reply_memory.sample(batch_size), batch_size, gamma)
