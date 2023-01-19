@@ -14,9 +14,13 @@ import random
 import logging as lg
 
 
-def _compute_reward(env):
-    reward = env.reward + len(env.find_all_chars_pos([Symbols.OBSCURE_CHAR])) / (env.shape[0] * env.shape[1])
-    trg_pos = env.find_first_char_pos(Symbols.KEY_CHAR)
+def _compute_reward(env, history_reward: dict):
+    visible_chars = len(env.find_all_chars_pos([Symbols.OBSCURE_CHAR]))
+    if "last_visible_chars" in history_reward:
+        visible_chars -= history_reward["last_visible_chars"]
+    history_reward["last_visible_chars"] = visible_chars
+    reward = env.reward + visible_chars / (env.shape[0] * env.shape[1])
+    trg_pos = env.find_first_char_pos(Symbols.STAIR_UP_CHAR)
     if trg_pos is not None:
         curr = env.find_first_char_pos(Symbols.HERO_CHAR)
         reward = 50 / ((trg_pos[0] - curr[0]) ** 2 + (trg_pos[1] - curr[1]) ** 2)
@@ -58,6 +62,7 @@ class RLRunner(AlgorithmRunner):
         reply_memory = ReplayMemory(memory_size)
         next_state = None
         steps, total_reward, total_loss, loss_count = 0, 0, 0, 0
+        history_reward = {}
         while not env.done:
             state = self._state_from_obs(env)
             action = self._select_action(state, steps)
@@ -65,7 +70,7 @@ class RLRunner(AlgorithmRunner):
             steps += 1
             if self.env is not None:
                 self.one_more_step()
-            reward = env.reward + _compute_reward(env)
+            reward = env.reward + _compute_reward(env, history_reward)
             total_reward += reward
             reply_memory.push(Record(state=state, action=action, next_state=next_state, reward=reward))
             next_state = state
