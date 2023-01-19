@@ -5,6 +5,7 @@ from typing import Callable
 import gym
 import minihack
 from nle import nethack
+from tqdm import tqdm
 
 from src.minihack.actions import ACTIONS, ACTIONS_DICT
 from src.minihack.symbol import Symbol, Symbols
@@ -22,12 +23,14 @@ class Env:
             actions=actions,
             max_episode_steps=max_episode_steps,
         )
+        self.pbar = None
         self.obs = self.env.reset()
         self.reward = 0
         self.done = False
         self.info = None
         self.shape = nethack.OBSERVATION_DESC.get('chars')['shape']
         self.over_hero_symbol = None
+        self.step_callback = None
 
     def find_all_chars_pos(self, symbols: list[Symbol] = [Symbols.HERO_CHAR]):
         poss = []
@@ -60,13 +63,19 @@ class Env:
     def reset(self):
         self.obs = self.env.reset()
         self.done = False
+        self.pbar = tqdm(total=self.env._max_episode_steps)
         return self.obs
 
     def step(self, step, target_symbol: Symbol = None):
         old_hero = self.find_first_char_pos()
         self.obs, self.reward, self.done, self.info = self.env.step(ACTIONS_DICT[step])
+        self.pbar.update(1)
+        if self.done:
+            self.pbar.close()
         if old_hero != self.find_first_char_pos():
             self.over_hero_symbol = target_symbol
+        if self.step_callback is not None:
+            self.step_callback()
         return self.obs, self.reward, self.done, self.info
 
     def render(self, sleep_time: float = 0.2):

@@ -67,8 +67,6 @@ class RLRunner(AlgorithmRunner):
             action = self._select_action(state, steps)
             env.step(ACTIONS[action])
             steps += 1
-            if self.env is not None:
-                self.one_more_step()
             reward = env.reward + _compute_reward(env, history_reward)
             total_reward += reward
             reply_memory.push(Record(state=state, action=action, next_state=next_state, reward=reward))

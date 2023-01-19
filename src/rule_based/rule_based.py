@@ -2,17 +2,22 @@ import gym
 import minihack
 from nle import nethack
 
-from IPython.display import clear_output 
 import random
 from random import randint
 from functools import reduce
 import numpy as np
+import logging as lg
 
 
 all_openings = {}
 algorithm_steps = 0
 hero_steps = 0
 last_door_visit = 0
+verbose = False
+
+def print(*args):
+    if verbose:
+        lg.info(args)
 
 # function to find cheracters position
 def char_pos(obs, chars=['@']):
@@ -629,10 +634,13 @@ def get_direction(coords1, coords2):
         return "same location"
 
 
-def solution(env, obs):
+def solution(env, obs, _verbose=False):
     global algorithm_steps
     global hero_steps
     global last_door_visit
+    global verbose
+
+    verbose = _verbose
 
     all_openings = {}
     algorithm_steps = 0
@@ -647,53 +655,54 @@ def solution(env, obs):
     first_door = False
     first_door_step = 0
     
-    while stop == False and algorithm_steps < 1000:
-        algorithm_steps += 1
-        found_stairs, env, obs = reach_stairs_down(obs, env)
-        if  found_stairs == False:
-            stop = False
-            found_key, env, obs = pick_key(env, obs)
-            if  found_key == True:
-                if first_key == False:
-                    first_key = True
-                    first_key_step = hero_steps
-                print("got key")
+    try:
+        while stop == False and algorithm_steps < 1000:
+            algorithm_steps += 1
+            found_stairs, env, obs = reach_stairs_down(obs, env)
+            if  found_stairs == False:
+                stop = False
+                found_key, env, obs = pick_key(env, obs)
+                if  found_key == True:
+                    if first_key == False:
+                        first_key = True
+                        first_key_step = hero_steps
+                    print("got key")
 
-            all_openings = get_all_openings(obs)    
-            print("all openings: ", all_openings)
-            closest_opening = get_closest_opening(all_openings, obs)
-            random_state = 42
-            if closest_opening == [0, 0]:
-                closest_opening = get_closest_opening(all_openings, obs, False)
-                random_state = 62
-            succeed, direction, env, obs = allign_to_closest_opening(obs, env, openings=all_openings)
-            
-            if succeed:
-                if first_door == False:
-                    first_door_step = hero_steps
-                last_door_visit+=1
-                all_openings[str(closest_opening)] = last_door_visit
-                corridor_path, message, direction, obs, env = navigate_corridor(obs, env, direction, [-999, -999], True, random_state)
-                print("corridor_path ", corridor_path)
-                if message == "impasse":
-                    print("going back from impasse")
-                    obs, env = walk_corridor(obs, env, corridor_path, True)
-                elif message == "room":
-                    print(message)
+                all_openings = get_all_openings(obs)
+                print("all openings: ", all_openings)
+                closest_opening = get_closest_opening(all_openings, obs)
+                random_state = 42
+                if closest_opening == [0, 0]:
+                    closest_opening = get_closest_opening(all_openings, obs, False)
+                    random_state = 62
+                succeed, direction, env, obs = allign_to_closest_opening(obs, env, openings=all_openings)
+
+                if succeed:
+                    if first_door == False:
+                        first_door_step = hero_steps
+                    last_door_visit+=1
+                    all_openings[str(closest_opening)] = last_door_visit
+                    corridor_path, message, direction, obs, env = navigate_corridor(obs, env, direction, [-999, -999], True, random_state)
+                    print("corridor_path ", corridor_path)
+                    if message == "impasse":
+                        print("going back from impasse")
+                        obs, env = walk_corridor(obs, env, corridor_path, True)
+                    elif message == "room":
+                        print(message)
+                    else:
+                        stop = True
+                    print("corridor_path ", corridor_path)
+                    print("algorithm_steps ", algorithm_steps)
+                    print("hero_steps ", hero_steps)
+                    print("openings ", all_openings)
                 else:
+                    print("COULD NOT ALLIGN")
                     stop = True
-                print("corridor_path ", corridor_path)
-                print("algorithm_steps ", algorithm_steps)
-                print("hero_steps ", hero_steps)
-                print("openings ", all_openings)
+                    break
+                obs, env = final_check_before_next_iteration(obs, env, direction)
             else:
-                print("COULD NOT ALLIGN")
-                stop = True
-                break
-            obs, env = final_check_before_next_iteration(obs, env, direction)
-            input()
-        else:
-            print("stairs found")
-            return True, algorithm_steps, first_key_step, first_door_step, first_door_step+2
-    
+                print("stairs found")
+                return True, algorithm_steps, first_key_step, first_door_step, first_door_step+2
+    except Exception as e:
+        lg.error(e)
     return False, algorithm_steps, first_key_step, first_door_step, first_door_step+2

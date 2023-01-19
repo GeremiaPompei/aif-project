@@ -48,12 +48,10 @@ class PathFindingRunner(AlgorithmRunner):
                 next_step_symbol = Symbol.from_obs(self.env.obs, next_step[0], next_step[1])
                 if next_step_symbol in Symbols.DOOR_CLOSE_CHARS:
                     self.env.step(cmd.APPLY)
-                    self.one_more_step()
                     if self.sleep_time > 0:
                         self.env.render(self.sleep_time)
                 if not self.env.done:
                     self.env.step(action, next_step_symbol)
-                    self.one_more_step()
                     if self.sleep_time > 0:
                         self.env.render(self.sleep_time)
                     if not self.env.done:

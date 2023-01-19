@@ -1,6 +1,4 @@
 from src.minihack.env import Env
-from tqdm import tqdm
-
 from src.minihack.symbol import Symbols
 
 
@@ -11,7 +9,6 @@ class AlgorithmRunner:
         self.steps_first_door = None
         self.steps_first_corridor = None
         self.win = None
-        self.pbar = None
         self.env = None
 
     def init_env(self, env: Env) -> None:
@@ -21,17 +18,16 @@ class AlgorithmRunner:
         :return: None
         """
         self.env = env
-        self.pbar = tqdm(total=self.env.max_episode_steps)
         self.total_steps = 0
         self.steps_first_key = None
         self.steps_first_door = None
         self.steps_first_corridor = None
         self.win = None
+        self.env.step_callback = self.one_more_step
 
     def one_more_step(self):
         if self.env.done:
             self.win = self.env.over_hero_symbol == Symbols.STAIR_UP_CHAR
-            self.pbar.close()
         else:
             self.total_steps += 1
             if self.steps_first_key is None and self.env.over_hero_symbol == Symbols.KEY_CHAR:
@@ -40,7 +36,6 @@ class AlgorithmRunner:
                 self.steps_first_door = self.total_steps
             if self.steps_first_corridor is None and self.env.over_hero_symbol in Symbols.CORRIDOR_CHARS:
                 self.steps_first_corridor = self.total_steps
-            self.pbar.update(1)
 
     def run(self):
         """
