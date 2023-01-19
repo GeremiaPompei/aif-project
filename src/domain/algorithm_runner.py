@@ -1,20 +1,48 @@
 from src.minihack.env import Env
-from abc import ABC, abstractmethod
+from tqdm import tqdm
+
+from src.minihack.symbol import Symbols
 
 
-class AlgorithmRunner(ABC):
+class AlgorithmRunner:
+    def __init__(self):
+        self.total_steps = 0
+        self.steps_first_key = None
+        self.steps_first_door = None
+        self.steps_first_corridor = None
+        self.win = None
+        self.pbar = None
+        self.env = None
 
-    @abstractmethod
     def init_env(self, env: Env) -> None:
         """
         Environment initializer.
         :param env: Environment
         :return: None
         """
-        pass
+        self.env = env
+        self.pbar = tqdm(total=self.env.max_episode_steps)
+        self.total_steps = 0
+        self.steps_first_key = None
+        self.steps_first_door = None
+        self.steps_first_corridor = None
+        self.win = None
 
-    @abstractmethod
-    def run(self) -> tuple[bool, float, float, float, float]:
+    def one_more_step(self):
+        if self.env.done:
+            self.win = self.env.over_hero_symbol == Symbols.STAIR_UP_CHAR
+            self.pbar.close()
+        else:
+            self.total_steps += 1
+            if self.steps_first_key is None and self.env.over_hero_symbol == Symbols.KEY_CHAR:
+                self.steps_first_key = self.total_steps
+            if self.steps_first_door is None and self.env.over_hero_symbol in Symbols.DOOR_OPEN_CHARS + Symbols.DOOR_CLOSE_CHARS:
+                self.steps_first_door = self.total_steps
+            if self.steps_first_corridor is None and self.env.over_hero_symbol in Symbols.CORRIDOR_CHARS:
+                self.steps_first_corridor = self.total_steps
+            self.pbar.update(1)
+
+    def run(self):
         """
         Algorithm run function
         :return: Tuple composed by:

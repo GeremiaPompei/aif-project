@@ -1,14 +1,22 @@
 from collections import deque
-from random import random
+from random import sample
+
+
+class Record:
+    def __init__(self, state, action, reward, next_state):
+        self.state = state
+        self.action = action
+        self.reward = reward
+        self.next_state = next_state
 
 
 class ReplayMemory:
 
     def __init__(self, capacity):
-        self.memory = deque([], maxlen=capacity)
+        self.memory: deque[Record] = deque([], maxlen=capacity)
 
-    def push(self, **args):
-        self.memory.append(dict(**args))
+    def push(self, record: Record):
+        self.memory.append(record)
 
-    def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
+    def sample(self, batch_size) -> list[Record]:
+        return sample(self.memory, batch_size)
