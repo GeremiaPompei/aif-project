@@ -90,7 +90,7 @@ class RLRunner(AlgorithmRunner):
 
     def train(self, env: Env,
               n_env: int = 1000,
-              memory_size: int = 100,
+              memory_size: int = 3000,
               batch_size: int = 64,
               gamma: float = 0.99,
               verbose: bool = True):
