@@ -52,14 +52,13 @@ class RLRunner(AlgorithmRunner):
         return torch.Tensor(np.array([[env.obs["chars"], env.obs["colors"]]]))
 
     def run(self, env: Env = None,
-            memory_size: int = 3000,
+            reply_memory: ReplayMemory = ReplayMemory(1000),
             batch_size: int = 32,
             gamma: float = 0.99,
             verbose: bool = False,
             save_model: bool = False):
         if env is None:
             env = self.env
-        reply_memory = ReplayMemory(memory_size)
         next_state = None
         steps, total_reward, total_loss, loss_count = 0, 0, 0, 0
         history_reward = {}
@@ -91,13 +90,13 @@ class RLRunner(AlgorithmRunner):
     def train(self, env: Env,
               n_env: int = 1000,
               memory_size: int = 3000,
-              batch_size: int = 64,
+              batch_size: int = 128,
               gamma: float = 0.99,
               verbose: bool = True):
         for i in range(n_env):
             lg.info(f"Env n.{i + 1}")
             env.reset()
-            self.run(env=env, memory_size=memory_size, batch_size=batch_size, gamma=gamma, verbose=verbose,
+            self.run(env=env, reply_memory=ReplayMemory(memory_size), batch_size=batch_size, gamma=gamma, verbose=verbose,
                      save_model=True)
 
     def _select_action(self, state: torch.Tensor, steps: int):
@@ -120,9 +119,9 @@ class RLRunner(AlgorithmRunner):
 
         # expected action values
         state_action_values = self.policy_net(state_batch).gather(1, action_batch)
-        next_state_values = torch.zeros(batch_size)
         non_final_mask = torch.tensor([s.next_state is not None for s in batch])
         non_final_next_states = torch.cat([torch.tensor(s.next_state) for s in batch if s.next_state is not None])
+        next_state_values = torch.zeros(batch_size)
         with torch.no_grad():
             next_state_values[non_final_mask] = self.policy_net(non_final_next_states).max(1)[0]
         target = (next_state_values * gamma) + reward_batch
