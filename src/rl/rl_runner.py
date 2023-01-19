@@ -42,7 +42,8 @@ class RLRunner(AlgorithmRunner):
             memory_size: int = 3000,
             batch_size: int = 32,
             gamma: float = 0.99,
-            verbose: bool = False):
+            verbose: bool = False,
+            save_model: bool = False):
         if env is None:
             env = self.env
         reply_memory = ReplayMemory(memory_size)
@@ -69,7 +70,7 @@ class RLRunner(AlgorithmRunner):
             lg.info(f"Total reward: {total_reward}")
             lg.info(f"Mean loss: {round(total_loss / loss_count, 4)}")
             lg.info(f"Status: {'Win' if env.over_hero_symbol == Symbols.STAIR_UP_CHAR else 'Lost'}")
-        if self.model_filename is not None:
+        if self.model_filename is not None and save_model:
             torch.save(self.policy_net.state_dict(), self.model_filename)
 
     def train(self, env: Env,
@@ -81,7 +82,8 @@ class RLRunner(AlgorithmRunner):
         for i in range(n_env):
             lg.info(f"Env n.{i + 1}")
             env.reset()
-            self.run(env=env, memory_size=memory_size, batch_size=batch_size, gamma=gamma, verbose=verbose)
+            self.run(env=env, memory_size=memory_size, batch_size=batch_size, gamma=gamma, verbose=verbose,
+                     save_model=True)
 
     def _select_action(self, state: torch.Tensor, steps: int):
         sample = random.random()
