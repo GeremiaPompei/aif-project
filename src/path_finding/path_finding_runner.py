@@ -1,12 +1,8 @@
 from enum import Enum
-from typing import Callable
-
 from src.domain import AlgorithmRunner
 from src.minihack.env import Env
 from src.minihack.symbol import Symbols, Symbol
-from src.path_finding.astar import AStar
 from nle.nethack import Command as cmd
-
 from src.path_finding.path_finding_algorithm import PathFindingAlgorithm
 
 
@@ -20,10 +16,9 @@ class TARGET_TYPES(Enum):
 
 class PathFindingRunner(AlgorithmRunner):
 
-    def __init__(self, heuristic: Callable = None, env: Env = None, sleep_time: float = -1):
+    def __init__(self, algorithm: PathFindingAlgorithm = None, env: Env = None, sleep_time: float = -1):
         super(PathFindingRunner, self).__init__()
-        self.algorithm = AStar(heuristic=heuristic, is_valid_move=self._is_valid_move)
-        self.heuristic = heuristic
+        self.algorithm = algorithm
         self.sleep_time = sleep_time
         self.visited_corridors = set()
         self.unable_pos = set()
@@ -32,7 +27,7 @@ class PathFindingRunner(AlgorithmRunner):
 
     def init_env(self, env: Env):
         super(PathFindingRunner, self).init_env(env)
-        self.algorithm = AStar(env, self.heuristic, is_valid_move=self._is_valid_move)
+        self.algorithm.env = self.env
 
     def run(self) -> tuple[bool, int, float, float, float]:
         self.env.reset()
@@ -44,7 +39,7 @@ class PathFindingRunner(AlgorithmRunner):
             if self.env.over_hero_symbol == Symbols.STAIR_UP_CHAR:
                 break
             target_poss = self._find_targets()
-            actions = self.algorithm.find_actions(target_poss)
+            actions = self.algorithm.find_actions(target_poss, self._is_valid_move)
 
             for action in actions:
                 curr = self.env.find_first_char_pos()
@@ -54,9 +49,13 @@ class PathFindingRunner(AlgorithmRunner):
                 if next_step_symbol in Symbols.DOOR_CLOSE_CHARS:
                     self.env.step(cmd.APPLY)
                     self.one_more_step()
+                    if self.sleep_time > 0:
+                        self.env.render(self.sleep_time)
                 if not self.env.done:
                     self.env.step(action, next_step_symbol)
                     self.one_more_step()
+                    if self.sleep_time > 0:
+                        self.env.render(self.sleep_time)
                     if not self.env.done:
                         next_step_symbol_updated = Symbol.from_obs(self.env.obs, next_step[0], next_step[1])
                         if next_step_symbol_updated in Symbols.DOOR_CLOSE_CHARS \
