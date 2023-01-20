@@ -18,7 +18,7 @@ analyzer = Analyzer(
         PathFindingRunner(algorithm=AStar(heuristic=Heuristics.walkable_steps_in_matrix)),
         # RLRunner(),
     ],
-    env_n=15,
+    env_n=100,
     max_episode_steps=1000,
 )
 
