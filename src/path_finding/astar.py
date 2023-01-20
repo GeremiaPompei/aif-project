@@ -1,4 +1,6 @@
 from typing import Callable
+
+from src.minihack import Env
 from src.minihack.symbol import Symbols
 from src.path_finding.path_finding_algorithm import PathFindingAlgorithm
 
@@ -31,7 +33,7 @@ class AStar(PathFindingAlgorithm):
             curr = self.open_list.pop(0)
             if curr in targets_poss:
                 break
-            for kx, ky in PathFindingAlgorithm.NEIGHBORS_STEPS.keys():
+            for kx, ky in Env.NEIGHBORS_STEPS.keys():
                 neighbor = curr[0] + kx, curr[1] + ky
                 if is_valid_move(neighbor):
                     neighbor_curr_g = self.g[curr] + 1

@@ -1,21 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Callable
-
-from nle.nethack import CompassDirection as directions
-
 from src.minihack import Env
 
 
 class PathFindingAlgorithm(ABC):
-
-    NEIGHBORS_STEPS = {
-        (-1, 0): directions.N,
-        (1, 0): directions.S,
-        (0, -1): directions.W,
-        (0, 1): directions.E
-    }
-
-    NEIGHBORS_STEPS_INV = {action: diff for diff, action in NEIGHBORS_STEPS.items()}
 
     def __int__(self, env: Env = None):
         self.start = None
@@ -37,7 +25,7 @@ class PathFindingAlgorithm(ABC):
             neighbor = parents_dict[curr]
             diff_x = curr[0] - neighbor[0]
             diff_y = curr[1] - neighbor[1]
-            action = PathFindingAlgorithm.NEIGHBORS_STEPS[(diff_x, diff_y)]
+            action = Env.NEIGHBORS_STEPS[(diff_x, diff_y)]
             actions.append(action)
             curr = neighbor
         actions.reverse()

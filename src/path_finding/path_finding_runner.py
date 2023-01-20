@@ -43,7 +43,7 @@ class PathFindingRunner(AlgorithmRunner):
 
             for action in actions:
                 curr = self.env.find_first_char_pos()
-                next_step_diff = PathFindingAlgorithm.NEIGHBORS_STEPS_INV[action]
+                next_step_diff = Env.NEIGHBORS_STEPS_INV[action]
                 next_step = (curr[0] + next_step_diff[0], curr[1] + next_step_diff[1])
                 next_step_symbol = Symbol.from_obs(self.env.obs, next_step[0], next_step[1])
                 if next_step_symbol in Symbols.DOOR_CLOSE_CHARS:
@@ -51,7 +51,7 @@ class PathFindingRunner(AlgorithmRunner):
                     if self.sleep_time > 0:
                         self.env.render(self.sleep_time)
                 if not self.env.done:
-                    self.env.step(action, next_step_symbol)
+                    self.env.step(action)
                     if self.sleep_time > 0:
                         self.env.render(self.sleep_time)
                     if not self.env.done:
@@ -67,7 +67,7 @@ class PathFindingRunner(AlgorithmRunner):
                     break
 
     def _valid_discover_floor(self, pos):
-        for kx, ky in PathFindingAlgorithm.NEIGHBORS_STEPS.keys():
+        for kx, ky in Env.NEIGHBORS_STEPS.keys():
             if Symbol.from_obs(self.env.obs, pos[0] + kx, pos[1] + ky) == Symbols.OBSCURE_CHAR:
                 return True
         return False
@@ -94,7 +94,7 @@ class PathFindingRunner(AlgorithmRunner):
         while len(frontier) > 0:
             curr = frontier.pop(0)
             self._check_terget(curr, targets_dict)
-            for kx, ky in PathFindingAlgorithm.NEIGHBORS_STEPS.keys():
+            for kx, ky in Env.NEIGHBORS_STEPS.keys():
                 neighbor = curr[0] + kx, curr[1] + ky
                 if self._is_valid_move(neighbor) and neighbor not in visited + frontier:
                     frontier.append(neighbor)

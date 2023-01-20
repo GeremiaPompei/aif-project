@@ -1,4 +1,3 @@
-from copy import deepcopy
 from time import sleep
 from typing import Callable
 
@@ -6,6 +5,7 @@ import gym
 import minihack
 from nle import nethack
 from tqdm import tqdm
+from nle.nethack import CompassDirection as directions
 
 from src.minihack.actions import ACTIONS, ACTIONS_DICT
 from src.minihack.symbol import Symbol, Symbols
@@ -13,6 +13,15 @@ from src.minihack.desfile import gen_desfile
 
 
 class Env:
+
+    NEIGHBORS_STEPS = {
+        (-1, 0): directions.N,
+        (1, 0): directions.S,
+        (0, -1): directions.W,
+        (0, 1): directions.E
+    }
+
+    NEIGHBORS_STEPS_INV = {action: diff for diff, action in NEIGHBORS_STEPS.items()}
 
     def __init__(self, all_visible: bool = False, actions: list[nethack.Command] = ACTIONS,
                  max_episode_steps: int = 1000):
@@ -66,14 +75,17 @@ class Env:
         self.pbar = tqdm(total=self.env._max_episode_steps)
         return self.obs
 
-    def step(self, step, target_symbol: Symbol = None):
+    def step(self, step):
         old_hero = self.find_first_char_pos()
+        if step in Env.NEIGHBORS_STEPS_INV:
+            trg_pos = Env.NEIGHBORS_STEPS_INV[step]
+            trg_symbol = Symbol.from_obs(self.obs, old_hero[0] + trg_pos[0], old_hero[1] + trg_pos[1])
         self.obs, self.reward, self.done, self.info = self.env.step(ACTIONS_DICT[step])
         self.pbar.update(1)
         if self.done:
             self.pbar.close()
-        if old_hero != self.find_first_char_pos():
-            self.over_hero_symbol = target_symbol
+        if step in Env.NEIGHBORS_STEPS_INV and old_hero != self.find_first_char_pos():
+            self.over_hero_symbol = trg_symbol
         if self.step_callback is not None:
             self.step_callback()
         return self.obs, self.reward, self.done, self.info
