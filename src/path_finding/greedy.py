@@ -7,7 +7,7 @@ from src.path_finding.path_finding_algorithm import PathFindingAlgorithm
 
 class Greedy(PathFindingAlgorithm):
 
-    def __init__(self, heuristic: Callable):
+    def __init__(self, heuristic: Callable = None):
         super(Greedy, self).__init__()
         self.heuristic_name = heuristic.__name__ if heuristic is not None else None
         self.heuristic = heuristic if heuristic is not None else lambda e, c, p: 0
@@ -40,4 +40,6 @@ class Greedy(PathFindingAlgorithm):
         return parents_dict
 
     def __str__(self):
-        return "Greedy"
+        if self.heuristic_name is None:
+            return "BreadthFirst"
+        return f"Greedy(heuristic: {self.heuristic_name})"

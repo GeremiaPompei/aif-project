@@ -8,6 +8,7 @@ from src.rule_based.rule_based_runner import RuleBasedRunner
 analyzer = Analyzer(
     algorithms=[
         RuleBasedRunner(),
+        PathFindingRunner(algorithm=Greedy()),
         PathFindingRunner(algorithm=Greedy(heuristic=Heuristics.manhattan)),
         PathFindingRunner(algorithm=Greedy(heuristic=Heuristics.euclidean)),
         PathFindingRunner(algorithm=Greedy(heuristic=Heuristics.walkable_steps_in_matrix)),
@@ -15,12 +16,12 @@ analyzer = Analyzer(
         PathFindingRunner(algorithm=AStar(heuristic=Heuristics.manhattan)),
         PathFindingRunner(algorithm=AStar(heuristic=Heuristics.euclidean)),
         PathFindingRunner(algorithm=AStar(heuristic=Heuristics.walkable_steps_in_matrix)),
-        RLRunner(),
+        # RLRunner(),
     ],
-    env_n=1000,
+    env_n=15,
     max_episode_steps=1000,
 )
 
 analyzer.analyze()
 
-print(analyzer.metrics)
+analyzer.to_csv()

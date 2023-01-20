@@ -103,3 +103,15 @@ class Analyzer:
                 "memory_usage": memory_usage,
             }
 
+    def to_csv(self, file_name: str = "metrics.csv"):
+        content = "algorithm_name,"
+        for column_name in list(self.metrics.values())[0].keys():
+            content += f"{column_name},"
+        content += "\n"
+        for alg_name, features in self.metrics.items():
+            content += f"{str(alg_name)},"
+            for attribute in features.values():
+                content += f"{attribute},"
+            content += "\n"
+        with open(file_name, "w") as fp:
+            fp.write(content)

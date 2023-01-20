@@ -27,3 +27,6 @@ class RuleBasedRunner(AlgorithmRunner):
 
         self.win, self.total_steps, self.steps_first_key, self.steps_first_door, self.steps_first_corridor = \
             solution(env, obs, _verbose=self.verbose)
+
+    def __str__(self):
+        return "RuleBased"

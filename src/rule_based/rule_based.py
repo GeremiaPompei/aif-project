@@ -642,7 +642,6 @@ def solution(env, obs, _verbose=False):
 
     verbose = _verbose
 
-    all_openings = {}
     algorithm_steps = 0
     hero_steps = 0
     last_door_visit = 0
@@ -656,7 +655,7 @@ def solution(env, obs, _verbose=False):
     first_door_step = 0
     
     try:
-        while stop == False and algorithm_steps < 1000:
+        while not stop and algorithm_steps < 1000:
             algorithm_steps += 1
             found_stairs, env, obs = reach_stairs_down(obs, env)
             if  found_stairs == False:
@@ -678,7 +677,7 @@ def solution(env, obs, _verbose=False):
                 succeed, direction, env, obs = allign_to_closest_opening(obs, env, openings=all_openings)
 
                 if succeed:
-                    if first_door == False:
+                    if not first_door:
                         first_door_step = hero_steps
                     last_door_visit+=1
                     all_openings[str(closest_opening)] = last_door_visit
@@ -697,7 +696,6 @@ def solution(env, obs, _verbose=False):
                     print("openings ", all_openings)
                 else:
                     print("COULD NOT ALLIGN")
-                    stop = True
                     break
                 obs, env = final_check_before_next_iteration(obs, env, direction)
             else:
