@@ -7,8 +7,6 @@ from src.rule_based.rule_based_runner import RuleBasedRunner
 
 analyzer = Analyzer(
     algorithms=[
-        RLRunner(model_filename=None),
-        RLRunner(model_filename="DQN.torch"),
         RuleBasedRunner(),
         PathFindingRunner(algorithm=Greedy()),
         PathFindingRunner(algorithm=Greedy(heuristic=Heuristics.manhattan)),
@@ -18,6 +16,8 @@ analyzer = Analyzer(
         PathFindingRunner(algorithm=AStar(heuristic=Heuristics.manhattan)),
         PathFindingRunner(algorithm=AStar(heuristic=Heuristics.euclidean)),
         PathFindingRunner(algorithm=AStar(heuristic=Heuristics.not_walkable_steps_in_matrix)),
+        RLRunner(model_filename=None),
+        RLRunner(model_filename="DQN.torch"),
     ],
     env_n=100,
     max_episode_steps=1000,
