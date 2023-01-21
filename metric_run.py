@@ -7,6 +7,7 @@ from src.rule_based.rule_based_runner import RuleBasedRunner
 
 analyzer = Analyzer(
     algorithms=[
+        RLRunner(sleep_time=0.1),
         RuleBasedRunner(),
         PathFindingRunner(algorithm=Greedy()),
         PathFindingRunner(algorithm=Greedy(heuristic=Heuristics.manhattan)),
@@ -16,7 +17,6 @@ analyzer = Analyzer(
         PathFindingRunner(algorithm=AStar(heuristic=Heuristics.manhattan)),
         PathFindingRunner(algorithm=AStar(heuristic=Heuristics.euclidean)),
         PathFindingRunner(algorithm=AStar(heuristic=Heuristics.walkable_steps_in_matrix)),
-        # RLRunner(),
     ],
     env_n=15,
     max_episode_steps=1000,
