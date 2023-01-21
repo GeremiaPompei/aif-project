@@ -113,4 +113,9 @@ class RLRunner(AlgorithmRunner):
         return loss.item()
 
     def __str__(self):
-        return "ReinforcementLearning(DQN)"
+        model_name = "DQN"
+        if self.model_filename is not None:
+            model_name += f"({self.model_filename})"
+        else:
+            model_name += f"(from-scratch)"
+        return f"ReinforcementLearning({model_name})"

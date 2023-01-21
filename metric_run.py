@@ -7,7 +7,8 @@ from src.rule_based.rule_based_runner import RuleBasedRunner
 
 analyzer = Analyzer(
     algorithms=[
-        RLRunner(sleep_time=0.1),
+        RLRunner(model_filename=None),
+        RLRunner(model_filename="DQN.torch"),
         RuleBasedRunner(),
         PathFindingRunner(algorithm=Greedy()),
         PathFindingRunner(algorithm=Greedy(heuristic=Heuristics.manhattan)),
