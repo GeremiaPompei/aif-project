@@ -30,12 +30,12 @@ class Heuristics:
         )
 
     @staticmethod
-    def walkable_steps_in_matrix(env: Env, hero_pos: tuple[int, int], target_poss: list[tuple[int, int]]):
+    def not_walkable_steps_in_matrix(env: Env, hero_pos: tuple[int, int], target_poss: list[tuple[int, int]]):
         def callback(x_target, y_target):
             dist = 0
             for x in range(min(hero_pos[0], x_target), max(hero_pos[0], x_target) + 1):
                 for y in range(min(hero_pos[1], y_target), max(hero_pos[1], y_target) + 1):
-                    if Symbol.from_obs(env.obs, x, y) in Symbols.WALKABLE_SYMBOLS:
+                    if not Symbol.from_obs(env.obs, x, y) in Symbols.WALKABLE_SYMBOLS:
                         dist += 1
             return dist
         return _compute_mean(target_poss, callback)
