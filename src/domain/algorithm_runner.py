@@ -26,10 +26,10 @@ class AlgorithmRunner:
         self.env.step_callback = self.one_more_step
 
     def one_more_step(self):
+        self.total_steps += 1
         if self.env.done:
             self.win = self.env.over_hero_symbol == Symbols.STAIR_UP_CHAR
         else:
-            self.total_steps += 1
             if self.steps_first_key is None and self.env.over_hero_symbol == Symbols.KEY_CHAR:
                 self.steps_first_key = self.total_steps
             if self.steps_first_door is None and self.env.over_hero_symbol in Symbols.DOOR_OPEN_CHARS + Symbols.DOOR_CLOSE_CHARS:
