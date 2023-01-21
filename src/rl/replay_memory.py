@@ -12,7 +12,7 @@ class Record:
 
 class ReplayMemory:
 
-    def __init__(self, capacity):
+    def __init__(self, capacity: int = 10000):
         self.memory: deque[Record] = deque([], maxlen=capacity)
 
     def push(self, record: Record):

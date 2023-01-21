@@ -34,21 +34,20 @@ class RLRunner(AlgorithmRunner):
         return torch.Tensor(np.array([[self.env.obs["chars"], self.env.obs["colors"]]]))
 
     def run(self,
-            reply_memory: ReplayMemory = ReplayMemory(1000),
+            reply_memory: ReplayMemory = ReplayMemory(),
             batch_size: int = 32,
             gamma: float = 0.99,
             verbose: bool = False,
             save_model: bool = False):
         self.env.reset()
         steps, total_reward, total_loss, loss_count = 0, 0, 0, 0
-        history_reward = {}
         next_state = None
         while not self.env.done:
             state = self._state_from_obs()
             action = self._select_action(state, steps)
             self.env.step(ACTIONS[action])
             steps += 1
-            reward = self.env.reward + self._compute_reward(history_reward)
+            reward = self.env.reward
             total_reward += reward
             if next_state is not None:
                 reply_memory.push(Record(state=state, action=action,
@@ -71,7 +70,7 @@ class RLRunner(AlgorithmRunner):
 
     def train(self,
               n_env: int = 1000,
-              memory_size: int = 3000,
+              memory_size: int = None,
               batch_size: int = 128,
               gamma: float = 0.99,
               verbose: bool = True):
@@ -112,18 +111,6 @@ class RLRunner(AlgorithmRunner):
         torch.nn.utils.clip_grad_value_(self.policy_net.parameters(), 100)
         optimizer.step()
         return loss.item()
-
-    def _compute_reward(self, history_reward: dict):
-        visible_chars = len(self.env.find_all_chars_pos([Symbols.OBSCURE_CHAR]))
-        if "last_visible_chars" in history_reward:
-            visible_chars -= history_reward["last_visible_chars"]
-        history_reward["last_visible_chars"] = visible_chars
-        reward = self.env.reward + visible_chars / (self.env.shape[0] * self.env.shape[1])
-        trg_pos = self.env.find_first_char_pos(Symbols.STAIR_UP_CHAR)
-        if trg_pos is not None:
-            curr = self.env.find_first_char_pos(Symbols.HERO_CHAR)
-            reward = 50 / ((trg_pos[0] - curr[0]) ** 2 + (trg_pos[1] - curr[1]) ** 2)
-        return reward
 
     def __str__(self):
         return "ReinforcementLearning(DQN)"

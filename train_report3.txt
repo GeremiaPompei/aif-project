@@ -1,0 +1,127 @@
+2023-01-21 08:23:57,713 - nle.env.base - INFO - Not saving any NLE data.
+2023-01-21 08:23:58,265 - root - INFO - Env n.1
+2023-01-21 08:26:10,807 - root - INFO - Steps: 1000
+2023-01-21 08:26:10,807 - root - INFO - Total reward: -5.83999999999992
+2023-01-21 08:26:10,807 - root - INFO - Mean loss: 51.8129
+2023-01-21 08:26:10,807 - root - INFO - Status: Lost
+2023-01-21 08:26:10,809 - root - INFO - Env n.2
+2023-01-21 08:28:42,706 - root - INFO - Steps: 1000
+2023-01-21 08:28:42,706 - root - INFO - Total reward: -5.599999999999925
+2023-01-21 08:28:42,706 - root - INFO - Mean loss: 51.5244
+2023-01-21 08:28:42,706 - root - INFO - Status: Lost
+2023-01-21 08:28:42,707 - root - INFO - Env n.3
+2023-01-21 08:29:02,540 - root - INFO - Steps: 131
+2023-01-21 08:29:02,540 - root - INFO - Total reward: 0.34999999999999964
+2023-01-21 08:29:02,540 - root - INFO - Mean loss: 50.3151
+2023-01-21 08:29:02,540 - root - INFO - Status: Win
+2023-01-21 08:29:02,541 - root - INFO - Env n.4
+2023-01-21 08:31:34,881 - root - INFO - Steps: 1000
+2023-01-21 08:31:34,881 - root - INFO - Total reward: -6.269999999999911
+2023-01-21 08:31:34,881 - root - INFO - Mean loss: 49.2844
+2023-01-21 08:31:34,881 - root - INFO - Status: Lost
+2023-01-21 08:31:34,882 - root - INFO - Env n.5
+2023-01-21 08:34:07,544 - root - INFO - Steps: 1000
+2023-01-21 08:34:07,544 - root - INFO - Total reward: -5.959999999999917
+2023-01-21 08:34:07,544 - root - INFO - Mean loss: 48.0846
+2023-01-21 08:34:07,544 - root - INFO - Status: Lost
+2023-01-21 08:34:07,545 - root - INFO - Env n.6
+2023-01-21 08:36:40,102 - root - INFO - Steps: 1000
+2023-01-21 08:36:40,103 - root - INFO - Total reward: -5.469999999999928
+2023-01-21 08:36:40,103 - root - INFO - Mean loss: 47.6206
+2023-01-21 08:36:40,103 - root - INFO - Status: Lost
+2023-01-21 08:36:40,103 - root - INFO - Env n.7
+2023-01-21 08:39:12,811 - root - INFO - Steps: 1000
+2023-01-21 08:39:12,811 - root - INFO - Total reward: -5.759999999999922
+2023-01-21 08:39:12,811 - root - INFO - Mean loss: 46.1762
+2023-01-21 08:39:12,811 - root - INFO - Status: Lost
+2023-01-21 08:39:12,813 - root - INFO - Env n.8
+2023-01-21 08:41:45,974 - root - INFO - Steps: 1000
+2023-01-21 08:41:45,974 - root - INFO - Total reward: -5.899999999999919
+2023-01-21 08:41:45,974 - root - INFO - Mean loss: 44.7877
+2023-01-21 08:41:45,974 - root - INFO - Status: Lost
+2023-01-21 08:41:45,975 - root - INFO - Env n.9
+2023-01-21 08:44:19,344 - root - INFO - Steps: 1000
+2023-01-21 08:44:19,344 - root - INFO - Total reward: -6.449999999999907
+2023-01-21 08:44:19,344 - root - INFO - Mean loss: 43.6866
+2023-01-21 08:44:19,344 - root - INFO - Status: Lost
+2023-01-21 08:44:19,345 - root - INFO - Env n.10
+2023-01-21 08:45:47,203 - root - INFO - Steps: 578
+2023-01-21 08:45:47,203 - root - INFO - Total reward: -1.7799999999999847
+2023-01-21 08:45:47,203 - root - INFO - Mean loss: 42.7717
+2023-01-21 08:45:47,203 - root - INFO - Status: Win
+2023-01-21 08:45:47,204 - root - INFO - Env n.11
+2023-01-21 08:47:10,734 - root - INFO - Steps: 552
+2023-01-21 08:47:10,734 - root - INFO - Total reward: -1.8699999999999828
+2023-01-21 08:47:10,734 - root - INFO - Mean loss: 42.2991
+2023-01-21 08:47:10,735 - root - INFO - Status: Win
+2023-01-21 08:47:10,735 - root - INFO - Env n.12
+2023-01-21 08:49:41,673 - root - INFO - Steps: 1000
+2023-01-21 08:49:41,674 - root - INFO - Total reward: -6.169999999999913
+2023-01-21 08:49:41,674 - root - INFO - Mean loss: 41.2974
+2023-01-21 08:49:41,674 - root - INFO - Status: Lost
+2023-01-21 08:49:41,674 - root - INFO - Env n.13
+2023-01-21 08:52:12,098 - root - INFO - Steps: 1000
+2023-01-21 08:52:12,098 - root - INFO - Total reward: -6.159999999999913
+2023-01-21 08:52:12,098 - root - INFO - Mean loss: 39.8752
+2023-01-21 08:52:12,098 - root - INFO - Status: Lost
+2023-01-21 08:52:12,099 - root - INFO - Env n.14
+2023-01-21 08:54:42,722 - root - INFO - Steps: 1000
+2023-01-21 08:54:42,722 - root - INFO - Total reward: -6.449999999999907
+2023-01-21 08:54:42,722 - root - INFO - Mean loss: 38.6364
+2023-01-21 08:54:42,722 - root - INFO - Status: Lost
+2023-01-21 08:54:42,723 - root - INFO - Env n.15
+2023-01-21 08:57:13,390 - root - INFO - Steps: 1000
+2023-01-21 08:57:13,390 - root - INFO - Total reward: -5.519999999999927
+2023-01-21 08:57:13,390 - root - INFO - Mean loss: 37.5374
+2023-01-21 08:57:13,390 - root - INFO - Status: Lost
+2023-01-21 08:57:13,391 - root - INFO - Env n.16
+2023-01-21 08:59:43,610 - root - INFO - Steps: 1000
+2023-01-21 08:59:43,611 - root - INFO - Total reward: -6.079999999999915
+2023-01-21 08:59:43,611 - root - INFO - Mean loss: 36.3343
+2023-01-21 08:59:43,611 - root - INFO - Status: Lost
+2023-01-21 08:59:43,612 - root - INFO - Env n.17
+2023-01-21 09:02:13,630 - root - INFO - Steps: 1000
+2023-01-21 09:02:13,630 - root - INFO - Total reward: -6.1899999999999125
+2023-01-21 09:02:13,630 - root - INFO - Mean loss: 35.0246
+2023-01-21 09:02:13,630 - root - INFO - Status: Lost
+2023-01-21 09:02:13,632 - root - INFO - Env n.18
+2023-01-21 09:04:43,457 - root - INFO - Steps: 1000
+2023-01-21 09:04:43,457 - root - INFO - Total reward: -6.879999999999898
+2023-01-21 09:04:43,457 - root - INFO - Mean loss: 33.8225
+2023-01-21 09:04:43,457 - root - INFO - Status: Lost
+2023-01-21 09:04:43,458 - root - INFO - Env n.19
+2023-01-21 09:07:13,378 - root - INFO - Steps: 1000
+2023-01-21 09:07:13,378 - root - INFO - Total reward: -7.149999999999892
+2023-01-21 09:07:13,378 - root - INFO - Mean loss: 32.9276
+2023-01-21 09:07:13,378 - root - INFO - Status: Lost
+2023-01-21 09:07:13,379 - root - INFO - Env n.20
+2023-01-21 09:09:43,016 - root - INFO - Steps: 1000
+2023-01-21 09:09:43,016 - root - INFO - Total reward: -5.989999999999917
+2023-01-21 09:09:43,016 - root - INFO - Mean loss: 31.6458
+2023-01-21 09:09:43,016 - root - INFO - Status: Lost
+2023-01-21 09:09:43,017 - root - INFO - Env n.21
+2023-01-21 09:12:12,960 - root - INFO - Steps: 1000
+2023-01-21 09:12:12,960 - root - INFO - Total reward: -5.679999999999923
+2023-01-21 09:12:12,960 - root - INFO - Mean loss: 33.9306
+2023-01-21 09:12:12,960 - root - INFO - Status: Lost
+2023-01-21 09:12:12,961 - root - INFO - Env n.22
+2023-01-21 09:13:52,504 - root - INFO - Steps: 664
+2023-01-21 09:13:52,504 - root - INFO - Total reward: -2.8099999999999627
+2023-01-21 09:13:52,504 - root - INFO - Mean loss: 436.6233
+2023-01-21 09:13:52,505 - root - INFO - Status: Win
+2023-01-21 09:13:52,505 - root - INFO - Env n.23
+2023-01-21 09:16:23,357 - root - INFO - Steps: 1000
+2023-01-21 09:16:23,358 - root - INFO - Total reward: -5.979999999999917
+2023-01-21 09:16:23,358 - root - INFO - Mean loss: 878.5833
+2023-01-21 09:16:23,358 - root - INFO - Status: Lost
+2023-01-21 09:16:23,359 - root - INFO - Env n.24
+2023-01-21 09:18:58,889 - root - INFO - Steps: 1000
+2023-01-21 09:18:58,890 - root - INFO - Total reward: -6.899999999999897
+2023-01-21 09:18:58,890 - root - INFO - Mean loss: 854.1151
+2023-01-21 09:18:58,890 - root - INFO - Status: Lost
+2023-01-21 09:18:58,890 - root - INFO - Env n.25
+2023-01-21 09:21:33,218 - root - INFO - Steps: 1000
+2023-01-21 09:21:33,218 - root - INFO - Total reward: -6.169999999999913
+2023-01-21 09:21:33,218 - root - INFO - Mean loss: 829.8123
+2023-01-21 09:21:33,218 - root - INFO - Status: Lost
+2023-01-21 09:21:33,219 - root - INFO - Env n.26
